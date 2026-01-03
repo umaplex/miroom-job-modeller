@@ -1,4 +1,5 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+console.log('🔗 Connecting to Backend API:', API_URL)
 
 export async function fetchRecents(userId: string) {
     try {
