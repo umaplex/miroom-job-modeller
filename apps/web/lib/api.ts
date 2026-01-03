@@ -8,7 +8,8 @@ if (!API_URL) {
 }
 
 // Fallback is DANGEROUS in prod, so we remove it to expose the config error
-const FINAL_URL = API_URL || 'http://localhost:8000'
+// Remove trailing slash if present to prevent double-slashes in requests
+const FINAL_URL = (API_URL || 'http://localhost:8000').replace(/\/$/, '')
 
 export async function fetchRecents(userId: string) {
     try {
