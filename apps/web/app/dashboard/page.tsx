@@ -9,9 +9,9 @@ import { fetchRecents } from '@/lib/api'
 // Mock Data for "Pulse" (until we have an endpoint for it)
 // Mock Data for "Pulse" (until we have an endpoint for it)
 const PULSE_METRICS = [
-    { label: 'Total Companies', value: '1,240', change: '+12' },
-    { label: 'Updates (24h)', value: '14', change: '24h' },
-    { label: 'Watchlist Size', value: '0', change: '' },
+    { label: 'Global Intelligence', value: '1,240', change: '+12' },
+    { label: 'Fresh Intel (24h)', value: '14', change: '24h' },
+    { label: 'You are watching', value: '0', change: '' },
 ]
 
 export default function DashboardPage() {
@@ -52,16 +52,16 @@ export default function DashboardPage() {
 
                 {/* 1. System Pulse */}
                 <section>
-                    <h2 className="text-xs font-mono font-bold text-zinc-500 uppercase tracking-widest mb-6 px-1">System Pulse</h2>
+                    <h2 className="text-sm font-mono font-bold text-muted-foreground uppercase tracking-widest mb-6 px-1">System Pulse</h2>
                     <div className="grid grid-cols-3 gap-4 md:gap-8">
                         {PULSE_METRICS.map((m) => (
                             <div key={m.label} className="bg-card border border-border p-6 rounded-lg relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                                     <svg className="w-16 h-16 text-primary" fill="currentColor" viewBox="0 0 20 20"><path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z" /><path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z" /></svg>
                                 </div>
-                                <div className="text-2xl md:text-4xl font-bold text-white mb-1 group-hover:text-primary transition-colors">{m.value}</div>
+                                <div className="text-3xl md:text-5xl font-bold text-foreground mb-1 group-hover:text-primary transition-colors">{m.value}</div>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-xs font-mono text-zinc-500 uppercase">{m.label}</span>
+                                    <span className="text-sm font-mono text-muted-foreground uppercase">{m.label}</span>
                                     {m.change && <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded font-mono">{m.change}</span>}
                                 </div>
                             </div>
@@ -72,15 +72,15 @@ export default function DashboardPage() {
                 {/* 2. Recents Rail */}
                 <section>
                     <div className="flex items-center justify-between mb-6 px-1">
-                        <h2 className="text-xs font-mono font-bold text-zinc-500 uppercase tracking-widest">Recent Activity</h2>
+                        <h2 className="text-sm font-mono font-bold text-muted-foreground uppercase tracking-widest">Recent Activity</h2>
                         {recents.length > 0 && <span className="text-[10px] text-zinc-600 font-mono">SCROLL →</span>}
                     </div>
 
                     {recents.length === 0 ? (
-                        <div className="border border-dashed border-zinc-800 rounded-lg p-12 text-center">
-                            <h3 className="text-zinc-400 font-bold mb-2">No Active Intelligence</h3>
-                            <p className="text-zinc-600 text-sm max-w-md mx-auto mb-6">You haven't modeled any organizations yet. Use the search bar above to create your first dossier.</p>
-                            <div className="inline-block bg-zinc-900 border border-zinc-700 px-4 py-2 rounded text-xs font-mono text-zinc-500">
+                        <div className="border border-dashed border-border rounded-lg p-12 text-center">
+                            <h3 className="text-muted-foreground font-bold mb-2">No Active Intelligence</h3>
+                            <p className="text-muted-foreground text-sm max-w-md mx-auto mb-6">You haven't modeled any organizations yet. Use the search bar above to create your first dossier.</p>
+                            <div className="inline-block bg-muted border border-border px-4 py-2 rounded text-xs font-mono text-muted-foreground">
                                 TRY "STRIPE.COM" OR "AIRBNB"
                             </div>
                         </div>
@@ -105,12 +105,12 @@ export default function DashboardPage() {
                 {/* 3. Library (Preview) */}
                 <section>
                     <div className="flex items-center justify-between mb-6 px-1">
-                        <h2 className="text-sm font-mono font-bold text-zinc-400 uppercase tracking-widest">My Watchlist</h2>
-                        <button className="text-sm text-primary hover:text-white transition-colors font-medium">View All</button>
+                        <h2 className="text-sm font-mono font-bold text-muted-foreground uppercase tracking-widest">My Watchlist</h2>
+                        <button className="text-base text-primary hover:text-foreground transition-colors font-medium">View All</button>
                     </div>
                     <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
                         <table className="w-full text-left text-sm">
-                            <thead className="bg-[#121212] border-b border-border text-zinc-400 font-mono text-xs uppercase">
+                            <thead className="bg-muted/50 border-b border-border text-muted-foreground font-mono text-xs uppercase">
                                 <tr>
                                     <th className="px-8 py-5 font-semibold tracking-wider">Organization</th>
                                     <th className="px-8 py-5 font-semibold tracking-wider">Status</th>
@@ -119,27 +119,27 @@ export default function DashboardPage() {
                             </thead>
                             <tbody className="divide-y divide-border/50">
                                 {recents.map((item) => (
-                                    <tr key={item.org_id} className="hover:bg-white/5 transition-colors group cursor-pointer">
+                                    <tr key={item.org_id} className="hover:bg-muted/50 transition-colors group cursor-pointer">
                                         <td className="px-8 py-6">
-                                            <div className="font-bold text-lg text-white group-hover:text-primary transition-colors mb-0.5">{item.organizations.display_name}</div>
-                                            <div className="text-sm text-zinc-500 font-mono">{item.organizations.domain}</div>
+                                            <div className="font-bold text-lg text-foreground group-hover:text-primary transition-colors mb-0.5">{item.organizations.display_name}</div>
+                                            <div className="text-sm text-muted-foreground font-mono">{item.organizations.domain}</div>
                                         </td>
                                         <td className="px-8 py-6">
-                                            <span className="text-xs font-bold bg-zinc-800 text-zinc-300 px-3 py-1.5 rounded-full border border-zinc-700/50">{item.organizations.status}</span>
+                                            <span className="text-xs font-bold bg-muted text-muted-foreground px-3 py-1.5 rounded-full border border-border">{item.organizations.status}</span>
                                         </td>
                                         <td className="px-8 py-6 text-right">
                                             <div className="flex items-center justify-end gap-3">
-                                                <div className="h-2 w-24 bg-zinc-800 rounded-full overflow-hidden">
+                                                <div className="h-2 w-24 bg-muted rounded-full overflow-hidden">
                                                     <div className="h-full bg-primary" style={{ width: '20%' }}></div>
                                                 </div>
-                                                <span className="text-sm font-mono text-zinc-400 font-bold">20%</span>
+                                                <span className="text-sm font-mono text-muted-foreground font-bold">20%</span>
                                             </div>
                                         </td>
                                     </tr>
                                 ))}
                                 {recents.length === 0 && (
                                     <tr>
-                                        <td colSpan={3} className="px-8 py-12 text-center text-zinc-500 italic text-base">
+                                        <td colSpan={3} className="px-8 py-12 text-center text-muted-foreground italic text-base">
                                             Your watchlist is empty.
                                         </td>
                                     </tr>

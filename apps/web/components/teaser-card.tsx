@@ -21,12 +21,12 @@ export function TeaserCard({ pillarId, orgName, questionHook, riskCopy }: Teaser
                     High-Confidence Signal
                 </div>
 
-                <h3 className="text-xl font-bold text-white mb-4">
+                <h3 className="text-xl font-bold text-foreground mb-4">
                     "{questionHook}"
                 </h3>
 
-                <div className="p-4 bg-zinc-900/80 border border-zinc-800 rounded-lg mb-6 backdrop-blur-sm">
-                    <p className="text-zinc-400 text-sm italic">
+                <div className="p-4 bg-muted/80 border border-border rounded-lg mb-6 backdrop-blur-sm">
+                    <p className="text-muted-foreground text-sm italic">
                         {riskCopy}
                     </p>
                 </div>
@@ -34,9 +34,9 @@ export function TeaserCard({ pillarId, orgName, questionHook, riskCopy }: Teaser
                 <div className="flex flex-col gap-3">
                     {/* Mock Blurred Content */}
                     <div className="space-y-2 opacity-30 select-none blur-[2px]">
-                        <div className="h-4 bg-zinc-700 rounded w-3/4"></div>
-                        <div className="h-4 bg-zinc-700 rounded w-full"></div>
-                        <div className="h-4 bg-zinc-700 rounded w-5/6"></div>
+                        <div className="h-4 bg-muted-foreground/30 rounded w-3/4"></div>
+                        <div className="h-4 bg-muted-foreground/30 rounded w-full"></div>
+                        <div className="h-4 bg-muted-foreground/30 rounded w-5/6"></div>
                     </div>
 
                     <div className="mt-4">
@@ -44,7 +44,7 @@ export function TeaserCard({ pillarId, orgName, questionHook, riskCopy }: Teaser
                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                             Unlock {pillarId.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())} Intel
                         </button>
-                        <p className="text-center text-[10px] text-zinc-500 mt-2 font-mono">
+                        <p className="text-center text-[10px] text-muted-foreground mt-2 font-mono">
                             Included in Executive Plan ($49/mo)
                         </p>
                     </div>

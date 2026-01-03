@@ -4,28 +4,75 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
   --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
   --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
   --color-border: var(--border);
+  --color-input: var(--input);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 :root {
-  /* Professional SaaS Theme (Default) */
+  /* LIGHT MODE (New) */
+  --background: #ffffff;
+  --foreground: #09090b;
+  /* Zinc 950 */
+
+  --primary: #4f46e5;
+  /* Indigo 600 - slightly darker for contrast on white */
+  --primary-foreground: #ffffff;
+
+  --accent: #F59E0B;
+  /* Amber 500 - slightly darker gold */
+  --accent-foreground: #ffffff;
+
+  --card: #f4f4f5;
+  /* Zinc 100 */
+  --card-foreground: #09090b;
+
+  --border: #e4e4e7;
+  /* Zinc 200 */
+  --input: #e4e4e7;
+
+  --muted: #f4f4f5;
+  /* Zinc 100 */
+  --muted-foreground: #52525b;
+  /* Zinc 600 - Darker for better contrast */
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+.dark {
+  /* DARK MODE (Existing Premium SaaS Theme) */
   --background: #09090b;
   /* Zinc 950 */
   --foreground: #ffffff;
+
   --primary: #6366f1;
   /* Indigo 500 */
+  --primary-foreground: #ffffff;
+
   --accent: #FFD700;
   /* Gold */
+  --accent-foreground: #000000;
+
   --card: #18181b;
   /* Zinc 900 */
+  --card-foreground: #ffffff;
+
   --border: #27272a;
   /* Zinc 800 */
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --input: #27272a;
+
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  /* Zinc 400 */
 }
 
 body {

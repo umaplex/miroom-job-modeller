@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { ingestOrg } from '@/lib/api'
 import { createClient } from '@/utils/supabase/client'
+import { UserNav } from '@/components/user-nav'
 
 export function GlobalNav() {
     const router = useRouter()
@@ -52,21 +53,21 @@ export function GlobalNav() {
                                 type="text"
                                 placeholder="Enter URL (e.g. stripe.com)..."
                                 autoFocus
-                                className="flex-1 h-9 px-4 rounded-md bg-zinc-900 border border-indigo-500 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 text-white"
+                                className="flex-1 h-9 px-4 rounded-md bg-input border border-primary text-sm focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
                                 value={addUrl}
                                 onChange={(e) => setAddUrl(e.target.value)}
                             />
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-1.5 rounded-md text-sm font-medium transition-colors"
+                                className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-1.5 rounded-md text-sm font-medium transition-colors"
                             >
                                 {loading ? 'Adding...' : 'Add'}
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setIsAddMode(false)}
-                                className="bg-transparent text-zinc-400 hover:text-white px-3 rounded-md text-sm"
+                                className="bg-transparent text-muted-foreground hover:text-foreground px-3 rounded-md text-sm"
                             >
                                 Cancel
                             </button>
@@ -80,7 +81,7 @@ export function GlobalNav() {
                                 <input
                                     type="text"
                                     placeholder="Search companies..."
-                                    className="w-full h-9 pl-9 pr-4 rounded-md bg-zinc-900 border border-zinc-800 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-600 transition-all text-zinc-200 placeholder:text-zinc-600"
+                                    className="w-full h-9 pl-9 pr-4 rounded-md bg-input border border-border text-sm focus:outline-none focus:ring-1 focus:ring-ring transition-all text-foreground placeholder:text-muted-foreground"
                                     onFocus={() => setIsSearchFocused(true)}
                                     onBlur={() => setIsSearchFocused(false)}
                                     value={searchQuery}
@@ -90,7 +91,7 @@ export function GlobalNav() {
 
                             <button
                                 onClick={() => setIsAddMode(true)}
-                                className="h-9 px-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 rounded-md text-sm font-medium transition-colors flex items-center gap-2 shrink-0"
+                                className="h-9 px-4 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-md text-sm font-medium transition-colors flex items-center gap-2 shrink-0"
                             >
                                 <span>+ Add Target</span>
                             </button>
@@ -100,14 +101,7 @@ export function GlobalNav() {
 
                 {/* Right: User User */}
                 <div className="flex shrink-0 items-center justify-end space-x-4">
-                    <form action="/auth/signout" method="post">
-                        <button className="text-sm font-medium text-zinc-500 hover:text-red-400 transition-colors">
-                            Sign Out
-                        </button>
-                    </form>
-                    <div className="h-8 w-8 rounded-full bg-indigo-500/20 border border-indigo-500/50 flex items-center justify-center text-indigo-400 text-xs font-bold">
-                        JD
-                    </div>
+                    <UserNav />
                 </div>
             </div>
         </header>
