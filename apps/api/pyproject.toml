@@ -3,6 +3,7 @@ name = "job-modeller-api"
 version = "0.1.0"
 description = "Backend for Job Modeller Context Engine"
 authors = ["Admin <admin@jobmodeller.com>"]
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -11,6 +12,8 @@ uvicorn = "^0.27.0"
 supabase = "^2.3.0"
 langgraph = "^0.0.10"
 firecrawl-py = "^0.0.1"
+pydantic-settings = "^2.0.0"
+langchain-openai = "^0.0.2"
 
 [build-system]
 requires = ["poetry-core"]

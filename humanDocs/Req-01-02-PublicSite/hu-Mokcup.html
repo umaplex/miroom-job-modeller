@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Modeller - Context Over Content</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #121417;
+            --bg-card: #1C1F23;
+            --text-primary: #E4E4E7;
+            --text-muted: #6B7280;
+            --accent-gold: #FFD700;
+            --accent-indigo: #5D5DFF;
+            --success: #10B981;
+            --border: #2A2D31;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Live Ticker */
+        .ticker-wrapper {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .ticker {
+            display: flex;
+            padding: 12px 0;
+            animation: scroll-left 30s linear infinite;
+            white-space: nowrap;
+        }
+
+        .ticker-item {
+            padding: 0 40px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .ticker-item::before {
+            content: "●";
+            color: var(--success);
+            margin-right: 8px;
+        }
+
+        @keyframes scroll-left {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* Navigation */
+        nav {
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 20px;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 16px;
+            transition: color 0.2s;
+        }
+
+        .nav-links a.active {
+            color: var(--accent-gold);
+        }
+
+        .nav-links a.soon {
+            color: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        .nav-links a:hover:not(.soon) {
+            color: var(--accent-gold);
+        }
+
+        .cta-button {
+            background: linear-gradient(135deg, var(--accent-gold), #FFE55C);
+            color: var(--bg-dark);
+            padding: 10px 24px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+        }
+
+        /* Hero Section */
+        .hero {
+            max-width: 1200px;
+            margin: 80px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .hero-content h1 {
+            font-size: 48px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            letter-spacing: -0.02em;
+        }
+
+        .hero-content p {
+            font-size: 18px;
+            color: var(--text-muted);
+            margin-bottom: 30px;
+            line-height: 1.7;
+        }
+
+        .hero-features {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        .hero-features li {
+            list-style: none;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+        }
+
+        .hero-features li::before {
+            content: "▸";
+            color: var(--accent-gold);
+            margin-right: 12px;
+            font-size: 20px;
+        }
+
+        .hero-input {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 30px;
+            border-radius: 8px;
+        }
+
+        .url-input {
+            width: 100%;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 16px;
+            font-size: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .url-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .analyze-button {
+            width: 100%;
+            background: linear-gradient(135deg, var(--accent-gold), #FFE55C);
+            color: var(--bg-dark);
+            padding: 16px;
+            font-size: 18px;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .analyze-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+        }
+
+        .micro-copy {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-top: 12px;
+        }
+
+        /* Scanner Overlay */
+        .scanner-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(18, 20, 23, 0.95);
+            display: none;
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .scanner {
+            background: var(--bg-dark);
+            border: 2px solid var(--accent-gold);
+            border-radius: 8px;
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .scanner-header {
+            color: var(--accent-gold);
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .scanner-line {
+            margin: 8px 0;
+            font-size: 14px;
+            opacity: 0;
+            animation: fadeIn 0.3s forwards;
+        }
+
+        .scanner-line.success {
+            color: var(--success);
+        }
+
+        .progress-bar {
+            display: inline-block;
+            width: 60px;
+            height: 10px;
+            background: var(--border);
+            margin-left: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--accent-gold);
+            animation: progress 1.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        @keyframes progress {
+            to { left: 0; }
+        }
+
+        /* 5-Pillar Framework */
+        .framework-section {
+            max-width: 1200px;
+            margin: 100px auto;
+            padding: 0 20px;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-header h2 {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .section-header p {
+            color: var(--text-muted);
+            font-size: 18px;
+        }
+
+        .pillars-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 24px;
+        }
+
+        .pillar-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pillar-card:hover {
+            border-color: var(--accent-gold);
+            transform: translateY(-4px);
+        }
+
+        .pillar-number {
+            color: var(--accent-gold);
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .pillar-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        .pillar-jd {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .pillar-reality {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 12px;
+            min-height: 40px;
+        }
+
+        .confidence {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 16px;
+        }
+
+        .confidence-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--border);
+        }
+
+        .confidence-dot.filled {
+            background: var(--accent-gold);
+        }
+
+        .hover-text {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Series B Cache */
+        .cache-section {
+            background: var(--bg-card);
+            padding: 60px 0;
+            margin-top: 100px;
+        }
+
+        .companies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            margin-top: 40px;
+        }
+
+        .company-card {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 24px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .company-card:hover {
+            border-color: var(--accent-indigo);
+            transform: translateY(-2px);
+        }
+
+        .company-logo {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--accent-indigo);
+        }
+
+        .company-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .company-category {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .update-time {
+            color: var(--success);
+            font-size: 12px;
+            margin-bottom: 12px;
+        }
+
+        .view-link {
+            color: var(--accent-indigo);
+            font-size: 14px;
+            text-decoration: none;
+        }
+
+        /* Redacted Preview */
+        .redacted-section {
+            max-width: 800px;
+            margin: 100px auto;
+            padding: 0 20px;
+        }
+
+        .redacted-box {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .redacted-header {
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .redacted-content {
+            line-height: 2;
+        }
+
+        .redacted {
+            background: var(--text-muted);
+            color: var(--text-muted);
+            padding: 0 8px;
+            margin: 0 4px;
+            border-radius: 2px;
+        }
+
+        .unlock-button {
+            display: block;
+            margin: 30px auto 0;
+            background: linear-gradient(135deg, var(--accent-gold), #FFE55C);
+            color: var(--bg-dark);
+            padding: 12px 32px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .unlock-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+        }
+
+        /* Practice Lab */
+        .practice-section {
+            max-width: 1200px;
+            margin: 100px auto;
+            padding: 0 20px;
+        }
+
+        .practice-teaser {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 60px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .practice-teaser::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(93, 93, 255, 0.1) 0%, 
+                rgba(255, 215, 0, 0.1) 100%);
+            filter: blur(40px);
+        }
+
+        .practice-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .practice-title {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .practice-subtitle {
+            color: var(--text-muted);
+            margin-bottom: 30px;
+        }
+
+        .waitlist-button {
+            background: transparent;
+            color: var(--accent-gold);
+            border: 2px solid var(--accent-gold);
+            padding: 12px 32px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .waitlist-button:hover {
+            background: var(--accent-gold);
+            color: var(--bg-dark);
+        }
+
+        /* Enhanced Pricing Styles */
+        .pricing-section {
+            max-width: 1200px;
+            margin: 100px auto;
+            padding: 0 20px;
+            position: relative;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            margin-top: 60px;
+            align-items: stretch;
+        }
+
+        .pricing-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 40px 32px;
+            position: relative;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Tier-specific styling */
+        .tier-free {
+            background: var(--bg-card);
+        }
+
+        .tier-sprint {
+            background: linear-gradient(180deg, var(--bg-card) 0%, rgba(93, 93, 255, 0.02) 100%);
+            border-color: rgba(93, 93, 255, 0.2);
+        }
+
+        .tier-season {
+            background: linear-gradient(180deg, rgba(255, 215, 0, 0.02) 0%, rgba(93, 93, 255, 0.02) 100%);
+            border-color: rgba(255, 215, 0, 0.3);
+            transform: scale(1.02);
+        }
+
+        .tier-season:hover {
+            transform: scale(1.04);
+            box-shadow: 0 10px 40px rgba(255, 215, 0, 0.1);
+        }
+
+        /* Badges and ribbons */
+        .tier-badge {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .tier-ribbon {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--accent-gold), #FFE55C);
+            color: var(--bg-dark);
+            padding: 4px 20px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+        }
+
+        /* Plan headers */
+        .plan-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .plan-price {
+            font-size: 48px;
+            font-weight: 300;
+            margin-bottom: 4px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .tier-free .plan-price {
+            color: var(--text-muted);
+        }
+
+        .tier-sprint .plan-price {
+            color: var(--accent-indigo);
+        }
+
+        .tier-season .plan-price {
+            color: var(--accent-gold);
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+        }
+
+        .plan-duration {
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Highlight box */
+        .plan-highlight {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .highlight-number {
+            font-size: 36px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 4px;
+        }
+
+        .tier-free .highlight-number {
+            color: var(--text-muted);
+        }
+
+        .tier-sprint .highlight-number {
+            color: var(--accent-indigo);
+        }
+
+        .tier-season .highlight-number {
+            color: var(--accent-gold);
+        }
+
+        .highlight-text {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Features list */
+        .plan-features {
+            list-style: none;
+            margin-bottom: auto;
+            padding-bottom: 32px;
+        }
+
+        .feature {
+            padding: 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 15px;
+            transition: all 0.2s;
+        }
+
+        .feature-icon {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .feature.included .feature-icon {
+            color: var(--success);
+        }
+
+        .feature.excluded {
+            opacity: 0.4;
+        }
+
+        .feature.excluded .feature-icon {
+            color: var(--text-muted);
+        }
+
+        .feature.premium .feature-icon {
+            color: var(--accent-gold);
+        }
+
+        .feature.bonus {
+            color: var(--accent-gold);
+            font-weight: 500;
+        }
+
+        .feature.bonus .feature-icon {
+            color: var(--accent-gold);
+        }
+
+        /* Enhanced buttons */
+        .plan-cta {
+            margin-top: auto;
+        }
+
+        .plan-button {
+            width: 100%;
+            padding: 14px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            border: 2px solid;
+        }
+
+        .tier-free-btn {
+            background: transparent;
+            color: var(--text-muted);
+            border-color: var(--border);
+        }
+
+        .tier-free-btn:hover {
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            border-color: var(--text-muted);
+        }
+
+        .tier-sprint-btn {
+            background: transparent;
+            color: var(--accent-indigo);
+            border-color: var(--accent-indigo);
+        }
+
+        .tier-sprint-btn:hover {
+            background: var(--accent-indigo);
+            color: var(--bg-dark);
+            box-shadow: 0 4px 20px rgba(93, 93, 255, 0.3);
+        }
+
+        .tier-season-btn {
+            background: linear-gradient(135deg, var(--accent-gold), #FFE55C);
+            color: var(--bg-dark);
+            border-color: var(--accent-gold);
+            font-weight: 700;
+        }
+
+        .tier-season-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(255, 215, 0, 0.4);
+        }
+
+        .plan-helper {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-top: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .pricing-footer {
+            text-align: center;
+            margin-top: 60px;
+            color: var(--text-muted);
+            font-size: 14px;
+            padding-top: 40px;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            padding: 40px 0;
+            margin-top: 100px;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .footer-left {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .footer-brand {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 18px;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            margin-bottom: 8px;
+        }
+
+        .footer-tagline {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .footer-right {
+            text-align: right;
+        }
+
+        .recruiter-section h3 {
+            color: var(--accent-gold);
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .recruiter-section p {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .recruiter-link {
+            color: var(--accent-gold);
+            text-decoration: none;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .pricing-grid {
+                grid-template-columns: 1fr;
+                max-width: 400px;
+                margin: 60px auto 0;
+            }
+            
+            .tier-season {
+                transform: scale(1);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero {
+                grid-template-columns: 1fr;
+                gap: 40px;
+                margin: 40px auto;
+            }
+
+            .hero-content h1 {
+                font-size: 36px;
+            }
+
+            .nav-links {
+                gap: 20px;
+            }
+
+            .pillars-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                gap: 40px;
+            }
+
+            .footer-right {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Live Intelligence Ticker -->
+    <div class="ticker-wrapper">
+        <div class="ticker">
+            <span class="ticker-item">Alembic deployed $145M for causal AI expansion</span>
+            <span class="ticker-item">PermitFlow Series B: $54M to solve housing crisis</span>
+            <span class="ticker-item">Nexl pivots to RevOps model</span>
+            <span class="ticker-item">Rippling expands HRIS with $200M funding</span>
+            <span class="ticker-item">Alembic deployed $145M for causal AI expansion</span>
+            <span class="ticker-item">PermitFlow Series B: $54M to solve housing crisis</span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <div class="logo">JOB MODELLER</div>
+            <div class="nav-links">
+                <a href="#" class="active">Research</a>
+                <a href="#" class="soon">Practice <span style="font-size: 12px;">(soon)</span></a>
+                <a href="#pricing">Pricing</a>
+                <a href="#" class="cta-button">GENERATE DOSSIER</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>CONTEXT OVER CONTENT.</h1>
+            <p>Generic prep is for juniors. High-growth operators use Job Modeller to decode the economic levers and burning platforms that drive senior-level hiring.</p>
+            <ul class="hero-features">
+                <li>5 Strategic Pillars</li>
+                <li>Real-time 2025 intelligence</li>
+                <li>Series B focus</li>
+            </ul>
+        </div>
+        <div class="hero-input">
+            <input type="text" class="url-input" placeholder="paste job URL or company domain (e.g., permitflow.com)..." id="companyUrl">
+            <button class="analyze-button" onclick="startAnalysis()">
+                ANALYZE COMPANY →
+            </button>
+            <p class="micro-copy">○ No credit card required</p>
+        </div>
+    </section>
+
+    <!-- Scanner Overlay -->
+    <div class="scanner-overlay" id="scanner">
+        <div class="scanner">
+            <div class="scanner-header">> Job Modeller Intelligence Scanner v2.1</div>
+            <div class="scanner-header" style="color: var(--text-muted); font-size: 12px;">
+                ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            </div>
+            <div id="scannerContent"></div>
+        </div>
+    </div>
+
+    <!-- 5-Pillar Framework -->
+    <section class="framework-section">
+        <div class="section-header">
+            <h2>THE STRATEGIC INTELLIGENCE FRAMEWORK</h2>
+            <p>There is a gap between the JD and the Boardroom. We bridge it.</p>
+        </div>
+        <div class="pillars-grid">
+            <div class="pillar-card">
+                <div class="pillar-number">1.</div>
+                <div class="pillar-title">ECONOMIC ENGINE</div>
+                <div class="pillar-jd">What JD says: "Growing SaaS"</div>
+                <div class="confidence">
+                    <div class="confidence-dot filled"></div>
+                    <div class="confidence-dot filled"></div>
+                    <div class="confidence-dot filled"></div>
+                    <div class="confidence-dot filled"></div>
+                    <div class="confidence-dot"></div>
+                </div>
+                <div class="pillar-reality">Reality: Usage-based pricing pivot threatening unit economics</div>
+                <div class="hover-text">[HOVER TO VIEW]</div>
+            </div>
+            <div class="pillar-card">
+                <div class="pillar-number">2.</div>
+                <div class="pillar-title">ORG DNA</div>
+                <div class="pillar-jd">What JD says: "Collaborative"</div>
+                <div class="confidence">
+                    <div class="confidence-dot filled"></div>
+                    <div class="confidence-dot filled"></div>
+                    <div class="confidence-dot filled"></div>
+                    <div class="confidence-dot"></div>
+                    <div class="confidence-dot"></div>
+                </div>
+                <div class="pillar-reality">Reality: Sales-led with engineering excellence mandate</div>
+                <div class="hover-text">[HOVER TO VIEW]</div>
+            </div>
+            <div class="pillar-card">
+                <div class="pillar-number">3.</div>
+                <div class="pillar-title">BURNING PLATFORM</div>
+                <div class="pillar-jd">What JD says: "Fast-paced"</div>
+                <div class="confidence">
+                    <div class="confidence-dot filled"></div>
+                    <div class="confidence-dot filled"></div>
+                    <div class="confidence-dot filled"></div>
+                    <div class="confidence-dot filled"></div>
+                    <div class="confidence-dot filled"></div>
+                </div>
+                <div class="pillar-reality">Reality: Housing crisis regulatory race against competitors</div>
+                <div class="hover-text">[HOVER TO VIEW]</div>
+            </div>
+            <div class="pillar-card">
+                <div class="pillar-number">4.</div>
+                <div class="pillar-title">DOMAIN LEXICON</div>
+                <div class="pillar-jd">What JD says: "Construction"</div>
+                <div class="confidence">
+                    <div class="confidence-dot filled"></div>
+                    <div class="confidence-dot filled"></div>
+                    <div class="confidence-dot filled"></div>
+                    <div class="confidence-dot filled"></div>
+                    <div class="confidence-dot"></div>
+                </div>
+                <div class="pillar-reality">Reality: Permitting, entitlements, municipal codes</div>
+                <div class="hover-text">[HOVER TO VIEW]</div>
+            </div>
+            <div class="pillar-card">
+                <div class="pillar-number">5.</div>
+                <div class="pillar-title">DECISION FRAMEWORK</div>
+                <div class="pillar-jd">What JD says: "Data-driven"</div>
+                <div class="confidence">
+                    <div class="confidence-dot filled"></div>
+                    <div class="confidence-dot filled"></div>
+                    <div class="confidence-dot filled"></div>
+                    <div class="confidence-dot"></div>
+                    <div class="confidence-dot"></div>
+                </div>
+                <div class="pillar-reality">Reality: Speed > Perfect, YC iteration philosophy</div>
+                <div class="hover-text">[HOVER TO VIEW]</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Series B Cache -->
+    <section class="cache-section">
+        <div class="section-header">
+            <h2>THE GROWTH INTELLIGENCE LIBRARY</h2>
+            <p>○ Pre-cached for instant access</p>
+        </div>
+        <div class="companies-grid">
+            <div class="company-card">
+                <div class="company-logo">R</div>
+                <div class="company-name">RIPPLING</div>
+                <div class="company-category">HR Platform</div>
+                <div class="update-time">Updated: 6h</div>
+                <a href="#" class="view-link">View Lexicon ↗</a>
+            </div>
+            <div class="company-card">
+                <div class="company-logo">M</div>
+                <div class="company-name">MAVEN</div>
+                <div class="company-category">Cohort Mgmt</div>
+                <div class="update-time">Updated: 1d</div>
+                <a href="#" class="view-link">View Economic Engine ↗</a>
+            </div>
+            <div class="company-card">
+                <div class="company-logo">V</div>
+                <div class="company-name">VERCEL</div>
+                <div class="company-category">Edge Platform</div>
+                <div class="update-time">Updated: 2h</div>
+                <a href="#" class="view-link">View Burning Platform ↗</a>
+            </div>
+            <div class="company-card">
+                <div class="company-logo">P</div>
+                <div class="company-name">PERMITFLOW</div>
+                <div class="company-category">ConTech AI</div>
+                <div class="update-time">Updated: 3h</div>
+                <a href="#" class="view-link">View Org DNA ↗</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Redacted Preview -->
+    <section class="redacted-section">
+        <div class="redacted-box">
+            <h3 class="redacted-header">STRATEGIC DOSSIER: [CLASSIFIED]</h3>
+            <div class="redacted-content">
+                <strong>ECONOMIC ENGINE</strong> <span style="float: right;">Confidence: ●●●</span><br><br>
+                The company's <span class="redacted">revenue model</span> relies on <span class="redacted">subscription base</span>
+                with current ARR of $<span class="redacted">XXX</span>M and <span class="redacted">growth rate</span> growth targeting
+                <span class="redacted">expansion metrics</span> by Q4 2025. Recent pivot to <span class="redacted">pricing strategy</span>...<br><br>
+                
+                <strong>BURNING PLATFORM</strong> <span style="float: right;">Confidence: ●●●</span><br><br>
+                Following their $<span class="redacted">XXX</span>M Series <span class="redacted">X</span> raise, the immediate
+                pressure is <span class="redacted">competitive dynamics and market opportunity</span>...
+            </div>
+            <button class="unlock-button">UNLOCK WITH COMPANY URL →</button>
+        </div>
+    </section>
+
+    <!-- Practice Lab Teaser -->
+    <section class="practice-section">
+        <div class="practice-teaser">
+            <div class="practice-content">
+                <h2 class="practice-title">PRESSURE-TEST YOUR ALIGNMENT</h2>
+                <p class="practice-subtitle">Coming Soon: AI personas modeled after company DNA</p>
+                <button class="waitlist-button">JOIN PRACTICE LAB WAITLIST</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Enhanced Pricing Section -->
+    <section class="pricing-section" id="pricing">
+        <div class="section-header">
+            <h2>INTELLIGENCE PRICING</h2>
+            <p>Pay for depth, not demos</p>
+        </div>
+        <div class="pricing-grid">
+            <!-- Recon Tier -->
+            <div class="pricing-card tier-free">
+                <div class="tier-badge">ENTRY</div>
+                <h3 class="plan-name">RECON</h3>
+                <div class="plan-price">$0</div>
+                <div class="plan-duration">Forever free</div>
+                
+                <div class="plan-highlight">
+                    <div class="highlight-number">2</div>
+                    <div class="highlight-text">companies/week</div>
+                </div>
+                
+                <ul class="plan-features">
+                    <li class="feature included">
+                        <span class="feature-icon">◐</span>
+                        <span class="feature-text">Standard Pillars Only</span>
+                    </li>
+                    <li class="feature included">
+                        <span class="feature-icon">◐</span>
+                        <span class="feature-text">48-hour old data</span>
+                    </li>
+                    <li class="feature excluded">
+                        <span class="feature-icon">○</span>
+                        <span class="feature-text">No data refresh</span>
+                    </li>
+                    <li class="feature excluded">
+                        <span class="feature-icon">○</span>
+                        <span class="feature-text">No practice sessions</span>
+                    </li>
+                    <li class="feature excluded">
+                        <span class="feature-icon">○</span>
+                        <span class="feature-text">No competitor intel</span>
+                    </li>
+                </ul>
+                
+                <div class="plan-cta">
+                    <button class="plan-button tier-free-btn">START FREE</button>
+                    <p class="plan-helper">No credit card</p>
+                </div>
+            </div>
+
+            <!-- Sprint Tier -->
+            <div class="pricing-card tier-sprint">
+                <div class="tier-badge">TACTICAL</div>
+                <h3 class="plan-name">SPRINT</h3>
+                <div class="plan-price">$49</div>
+                <div class="plan-duration">per month</div>
+                
+                <div class="plan-highlight">
+                    <div class="highlight-number">10</div>
+                    <div class="highlight-text">Intelligence Units/mo</div>
+                </div>
+                
+                <ul class="plan-features">
+                    <li class="feature included">
+                        <span class="feature-icon">●</span>
+                        <span class="feature-text">All 5 Context Pillars</span>
+                    </li>
+                    <li class="feature included">
+                        <span class="feature-icon">●</span>
+                        <span class="feature-text">Real-time data</span>
+                    </li>
+                    <li class="feature included">
+                        <span class="feature-icon">●</span>
+                        <span class="feature-text">20 data refreshes</span>
+                    </li>
+                    <li class="feature included">
+                        <span class="feature-icon">●</span>
+                        <span class="feature-text">30 practice sessions</span>
+                    </li>
+                    <li class="feature excluded">
+                        <span class="feature-icon">○</span>
+                        <span class="feature-text">No competitor intel</span>
+                    </li>
+                </ul>
+                
+                <div class="plan-cta">
+                    <button class="plan-button tier-sprint-btn">SELECT SPRINT</button>
+                    <p class="plan-helper">Cancel anytime</p>
+                </div>
+            </div>
+
+            <!-- Season Pass Tier -->
+            <div class="pricing-card tier-season featured">
+                <div class="tier-ribbon">BEST VALUE</div>
+                <div class="tier-badge">STRATEGIC</div>
+                <h3 class="plan-name">SEASON PASS</h3>
+                <div class="plan-price">$149</div>
+                <div class="plan-duration">3-month access</div>
+                
+                <div class="plan-highlight">
+                    <div class="highlight-number">30</div>
+                    <div class="highlight-text">Intelligence Units total</div>
+                </div>
+                
+                <ul class="plan-features">
+                    <li class="feature included premium">
+                        <span class="feature-icon">◉</span>
+                        <span class="feature-text">All 5 Context Pillars</span>
+                    </li>
+                    <li class="feature included premium">
+                        <span class="feature-icon">◉</span>
+                        <span class="feature-text">Live intelligence feed</span>
+                    </li>
+                    <li class="feature included premium">
+                        <span class="feature-icon">◉</span>
+                        <span class="feature-text">Unlimited refreshes</span>
+                    </li>
+                    <li class="feature included premium">
+                        <span class="feature-icon">◉</span>
+                        <span class="feature-text">100 practice sessions</span>
+                    </li>
+                    <li class="feature included premium">
+                        <span class="feature-icon">◉</span>
+                        <span class="feature-text">Competitor mapping</span>
+                    </li>
+                    <li class="feature bonus">
+                        <span class="feature-icon">★</span>
+                        <span class="feature-text">Priority support</span>
+                    </li>
+                </ul>
+                
+                <div class="plan-cta">
+                    <button class="plan-button tier-season-btn">GET SEASON PASS</button>
+                    <p class="plan-helper">Most popular for job hunts</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Additional pricing info -->
+        <div class="pricing-footer">
+            <p>All plans include core research engine • SSL encryption • GDPR compliant</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-left">
+                <div>
+                    <div class="footer-brand">JOB MODELLER</div>
+                    <div class="footer-tagline">Strategic Intelligence Platform</div>
+                </div>
+                <div class="footer-links">
+                    <a href="#">Terms</a>
+                    <a href="#">Privacy</a>
+                    <a href="#">FAQ</a>
+                    <a href="#">Contact</a>
+                </div>
+                <div class="footer-tagline">© 2025 Job Modeller Inc.</div>
+            </div>
+            <div class="footer-right">
+                <div class="recruiter-section">
+                    <h3>For Recruiters</h3>
+                    <p>Hiring for growth?<br>Give candidates the<br>context to succeed.</p>
+                    <a href="#" class="recruiter-link">Learn about Recruiter Seats →</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function startAnalysis() {
+            const url = document.getElementById('companyUrl').value;
+            if (!url) return;
+            
+            const scanner = document.getElementById('scanner');
+            const scannerContent = document.getElementById('scannerContent');
+            
+            scanner.style.display = 'flex';
+            scannerContent.innerHTML = '';
+            
+            const lines = [
+                { text: '[INIT] Target acquired: ' + url, delay: 0 },
+                { text: '[SCAN] Accessing Series B financial models...', delay: 500, hasProgress: true },
+                { text: '[RAG]  Extracting founder vision from podcast (Aug 2025)...', delay: 1500, hasProgress: true },
+                { text: '[API]  Cross-referencing $54M Accel funding announcement...', delay: 2500, hasProgress: true },
+                { text: '[ML]   Mapping organizational gravity: Sales-Engineering hybrid', delay: 3500, hasProgress: true },
+                { text: '[OK]   5 Context Pillars mapped. Confidence: 94%', delay: 4500, isSuccess: true },
+                { text: '', delay: 5000 },
+                { text: '> Generating strategic dossier... [✓]', delay: 5500, isSuccess: true }
+            ];
+            
+            lines.forEach((line) => {
+                setTimeout(() => {
+                    const lineElement = document.createElement('div');
+                    lineElement.className = 'scanner-line';
+                    if (line.isSuccess) lineElement.classList.add('success');
+                    
+                    lineElement.innerHTML = line.text;
+                    if (line.hasProgress) {
+                        lineElement.innerHTML += '<span class="progress-bar"></span>';
+                    }
+                    
+                    scannerContent.appendChild(lineElement);
+                    
+                    // Auto close after last line
+                    if (line.text.includes('dossier')) {
+                        setTimeout(() => {
+                            scanner.style.display = 'none';
+                            // In real app, this would navigate to the dossier
+                            alert('Dossier generated! In the full app, this would show your strategic intelligence report.');
+                        }, 2000);
+                    }
+                }, line.delay);
+            });
+        }
+        
+        // Close scanner on click outside
+        document.getElementById('scanner').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

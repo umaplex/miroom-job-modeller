@@ -1,26 +1,56 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-accent: var(--accent);
+  --color-card: var(--card);
+  --color-border: var(--border);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  /* Professional SaaS Theme (Default) */
+  --background: #09090b;
+  /* Zinc 950 */
+  --foreground: #ffffff;
+  --primary: #6366f1;
+  /* Indigo 500 */
+  --accent: #FFD700;
+  /* Gold */
+  --card: #18181b;
+  /* Zinc 900 */
+  --border: #27272a;
+  /* Zinc 800 */
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  letter-spacing: -0.025em;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Utilities */
+.font-mono {
+  font-family: var(--font-mono), monospace;
+  letter-spacing: -0.05em;
+}
+
+.text-cyber {
+  text-shadow: 0 0 20px rgba(129, 140, 248, 0.3);
+}
+
+.scanline {
+  background: linear-gradient(to bottom,
+      rgba(255, 255, 255, 0),
+      rgba(255, 255, 255, 0) 50%,
+      rgba(0, 0, 0, 0.2) 50%,
+      rgba(0, 0, 0, 0.2));
+  background-size: 100% 4px;
 }
