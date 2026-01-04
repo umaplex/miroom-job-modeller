@@ -19,13 +19,37 @@ class StandardAnalyst(BaseAnalyst):
     """
 
     async def run(self):
+        print(f"[StandardAnalyst] Starting run for Pillar: {self.pillar.get('name')} (ID: {self.pillar['id']})")
         start_time = time.time()
         
+        # Verify Keys
+        if not settings.OPENAI_API_KEY:
+            print("[StandardAnalyst] CRITICAL: OPENAI_API_KEY is missing.")
+            self.log_audit("ERROR", {"message": "OPENAI_API_KEY missing"})
+            return
+
         # 1. Fetch Rubric
         fields = await self.get_field_definitions()
         if not fields:
+            print("[StandardAnalyst] ERROR: No fields definition found.")
             self.log_audit("ERROR", {"message": "No fields definition found for this pillar"})
             return
+
+        # ... (rest of function)
+
+    def log_audit(self, step_type: str, input_context: dict, output_result: dict = None, 
+                  provider: str = None, model: str = None, 
+                  tokens_in: int = 0, tokens_out: int = 0, cost_usd: float = 0.0, latency_ms: int = 0):
+        # Print to console
+        print(f"[StandardAnalyst] [{step_type}] Provider: {provider} | Latency: {latency_ms}ms")
+        if step_type == "ERROR":
+            print(f"[StandardAnalyst] ERROR DETAIL: {input_context}")
+            
+        """
+        Writes to research_audit_logs table.
+        """
+        try:
+            # ... parent logic ...
 
         # 2. Query Generation (Step A: Hunter)
         queries = await self.generate_queries(fields)

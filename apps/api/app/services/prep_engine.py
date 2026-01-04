@@ -46,6 +46,8 @@ class PrepEngine:
         Now delegated to the Research OS Analyst.
         """
         def log(msg, code="INFO"):
+            # Print to console for immediate visibility
+            print(f"[PrepEngine] [{code}] {msg}")
             try:
                 self.supabase.table("prep_logs").insert({
                     "org_id": org_id,
