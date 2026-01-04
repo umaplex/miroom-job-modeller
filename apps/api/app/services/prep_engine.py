@@ -18,9 +18,19 @@ class PrepEngine:
         pillars = self.supabase.table("pillar_definitions").select("*").execute()
         
         active_pillars = pillars.data
-        if not active_pillars:
             # Fallback for MVP if no pillars defined yet
             active_pillars = [{"id": "econ_engine", "name": "Economic Engine"}]
+
+        # FILTER: Test Allowlist
+        from app.core.config import get_settings
+        settings = get_settings()
+        allowlist = settings.TEST_PILLARS_ALLOWLIST.strip()
+        
+        if allowlist and allowlist != "*":
+            allowed_ids = [x.strip() for x in allowlist.split(",")]
+            # Filter the list
+            active_pillars = [p for p in active_pillars if p['id'] in allowed_ids]
+            print(f"[PrepEngine] TEST MODE: Restricting to {allowed_ids}")
 
         # 2. Init Status
         for p in active_pillars:
