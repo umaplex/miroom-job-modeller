@@ -199,20 +199,43 @@ class StandardAnalyst(BaseAnalyst):
             content = response.content.replace("```json", "").replace("```", "").strip()
             data = json.loads(content)
             
+            # AUTO-SYNC: Update Organization Metadata if critical fields are found
+            org_updates = {}
             for f in fields:
                 key = f['key']
                 if key in data and data[key]:
                     item = data[key]
+                    val = item.get("value")
+                    
+                    # 1. Company Size (from 'funding_stage_status')
+                    if key == 'funding_stage_status' and val:
+                        # Simple heuristic mapping or direct value
+                        # For MVP we just store the raw string, or we could normalize.
+                        # DB expects uppercase enum-like string ideally, but text is forgiving.
+                        org_updates['company_size'] = str(val).upper().replace(" ", "_")
+
+                    # 2. Industry (from 'industry_vertical')
+                    if key == 'industry_vertical' and val:
+                        org_updates['industry'] = str(val).upper().replace(" ", "_")
+
                     observations.append({
                         "org_id": self.org['id'],
                         "field_id": f['id'],
-                        "structured_value": {"value": item.get("value")},
+                        "structured_value": {"value": val},
                         "analysis_markdown": item.get("analysis"),
                         "confidence_score": item.get("confidence", 0.5),
                         "evidence": metadata if metadata else [],
                         "is_synthetic": False
                     })
             
+            # Exec Sync
+            if org_updates:
+                try:
+                    self.log_audit("DEBUG", {"step": "METADATA_SYNC", "updates": org_updates})
+                    self.supabase.table("organizations").update(org_updates).eq("id", self.org['id']).execute()
+                except Exception as ex:
+                     self.log_audit("WARNING", {"step": "METADATA_SYNC_FAIL", "error": str(ex)})
+
             self.log_audit("SYNTHESIS", {"model": settings.DEFAULT_SYNTHESIS_MODEL}, {"count": len(observations)}, model=settings.DEFAULT_SYNTHESIS_MODEL)
             return observations
             

@@ -51,6 +51,9 @@ class PrepEngine:
         for p in active_pillars:
             await self.execute_pillar_worker(org_id, p['id'])
 
+        # 4. Final Aggregation
+        await self.check_and_update_org_status(org_id)
+
     async def execute_pillar_worker(self, org_id: str, pillar_id: str):
         """
         The actual 'Thinking' worker.
@@ -99,4 +102,25 @@ class PrepEngine:
         except Exception as e:
             log(f"Worker Failed: {str(e)}", "ERROR")
             self.supabase.table("org_pillar_status").update({"status": "FAILED"}).eq("org_id", org_id).eq("pillar_id", pillar_id).execute()
+
+    async def check_and_update_org_status(self, org_id: str):
+        """
+        Checks if ALL pillars are complete. If so, marks Org as COMPLETED.
+        For MVP where we run sequentially, we can just call this at the end or force it.
+        """
+        # Fetch all pillar statuses
+        res = self.supabase.table("org_pillar_status").select("*").eq("org_id", org_id).execute()
+        statuses = res.data or []
+        
+        if not statuses:
+            return
+
+        # Check if any are NOT completed (ignore 'failed' for now, or count failed as done)
+        # We generally want to know if "work is pending".
+        pending = [s for s in statuses if s['status'] in ['PENDING', 'SEARCHING', 'SYNTHESIZING']]
+        
+        if not pending:
+            # All done!
+            print(f"[PrepEngine] All pillars complete for {org_id}. Marking Org as COMPLETED.")
+            self.supabase.table("organizations").update({"status": "COMPLETED"}).eq("id", org_id).execute()
 
