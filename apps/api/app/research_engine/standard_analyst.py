@@ -63,12 +63,13 @@ class StandardAnalyst(BaseAnalyst):
         )
         
         try:
-            llm = ModelFactory.get_model(ModelProvider.OPENAI, "gpt-4o-mini")
+            # Use configured Query Model (e.g. gtm-4o-mini or gemini-flash)
+            llm = ModelFactory.get_configured_model(settings.DEFAULT_QUERY_MODEL)
             response = llm.invoke(system_prompt)
             content = response.content.replace("```json", "").replace("```", "").strip()
             queries = json.loads(content)
             
-            self.log_audit("QUERY_GEN", {"strategy": strategy}, {"queries": queries}, model="gpt-4o-mini")
+            self.log_audit("QUERY_GEN", {"strategy": strategy}, {"queries": queries}, model=settings.DEFAULT_QUERY_MODEL)
             return queries[:5] # Limit to 5
         except Exception as e:
             self.log_audit("ERROR", {"step": "QUERY_GEN", "error": str(e)})
@@ -152,7 +153,8 @@ class StandardAnalyst(BaseAnalyst):
         )
         
         try:
-            llm = ModelFactory.get_model(ModelProvider.OPENAI, "gpt-4o")
+            # Use configured Synthesis Model (e.g. gpt-4o or claude-3-opus)
+            llm = ModelFactory.get_configured_model(settings.DEFAULT_SYNTHESIS_MODEL)
             response = llm.invoke([
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": f"CONTEXT DATA:\n{evidence}"}
@@ -176,7 +178,7 @@ class StandardAnalyst(BaseAnalyst):
                         "is_synthetic": False
                     })
             
-            self.log_audit("SYNTHESIS", {"model": "gpt-4o"}, {"count": len(observations)}, model="gpt-4o")
+            self.log_audit("SYNTHESIS", {"model": settings.DEFAULT_SYNTHESIS_MODEL}, {"count": len(observations)}, model=settings.DEFAULT_SYNTHESIS_MODEL)
             return observations
             
         except Exception as e:
