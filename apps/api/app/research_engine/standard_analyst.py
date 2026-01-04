@@ -191,18 +191,36 @@ class StandardAnalyst(BaseAnalyst):
             return
 
         for obs in observations:
-            try:
-                existing = self.supabase.table("org_field_observations")\
-                    .select("id")\
-                    .eq("org_id", obs['org_id'])\
-                    .eq("field_id", obs['field_id'])\
-                    .execute()
-                
-                if existing.data:
-                    obs['id'] = existing.data[0]['id']
-                    self.supabase.table("org_field_observations").update(obs).eq("id", obs['id']).execute()
-                else:
-                    self.supabase.table("org_field_observations").insert(obs).execute()
+                # Attempt 1: Full Save
+                try:
+                    existing = self.supabase.table("org_field_observations")\
+                        .select("id")\
+                        .eq("org_id", obs['org_id'])\
+                        .eq("field_id", obs['field_id'])\
+                        .execute()
+                    
+                    if existing.data:
+                        obs['id'] = existing.data[0]['id']
+                        self.supabase.table("org_field_observations").update(obs).eq("id", obs['id']).execute()
+                    else:
+                        self.supabase.table("org_field_observations").insert(obs).execute()
+
+                except Exception as e:
+                    err_str = str(e)
+                    # GRACEFUL DEGRADATION: If schema cache is stale (PGRST204), try saving without new columns
+                    if "confidence_score" in err_str and "schema cache" in err_str:
+                        print(f"[StandardAnalyst] WARNING: Schema cache stale. Saving {obs.get('field_id')} without extended columns.")
+                        # Create stripped copy
+                        fallback_obs = obs.copy()
+                        fallback_obs.pop('confidence_score', None)
+                        fallback_obs.pop('evidence', None)
+                        
+                        if 'id' in fallback_obs:
+                             self.supabase.table("org_field_observations").update(fallback_obs).eq("id", fallback_obs['id']).execute()
+                        else:
+                             self.supabase.table("org_field_observations").insert(fallback_obs).execute()
+                    else:
+                        raise e # Re-raise if it's a different error
                     
             except Exception as e:
                 self.log_audit("ERROR", {"step": "PERSIST", "field": obs.get('field_id'), "error": str(e)})
