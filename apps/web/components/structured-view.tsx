@@ -40,12 +40,15 @@ interface Dimension {
 export function StructuredView({ dimensions, isEditing }: { dimensions: Dimension[], isEditing: boolean }) {
     const [activeDimId, setActiveDimId] = useState<string>(dimensions[0]?.id)
 
-    // Auto-select first dimension if data changes
+    // Auto-select first dimension if data changes (e.g. switching pillars)
     useEffect(() => {
-        if (dimensions?.length > 0 && !activeDimId) {
-            setActiveDimId(dimensions[0].id)
+        if (dimensions?.length > 0) {
+            const isActiveValid = dimensions.find(d => d.id === activeDimId)
+            if (!isActiveValid) {
+                setActiveDimId(dimensions[0].id)
+            }
         }
-    }, [dimensions])
+    }, [dimensions, activeDimId])
 
     if (!dimensions || dimensions.length === 0) {
         return <div className="text-muted-foreground italic p-4">No structured data available for this pillar.</div>
@@ -55,8 +58,8 @@ export function StructuredView({ dimensions, isEditing }: { dimensions: Dimensio
 
     return (
         <div className="space-y-6">
-            {/* Dimension Chips */}
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none border-b border-border">
+            {/* Dimension Chips - Wrapped */}
+            <div className="flex flex-wrap gap-2 pb-2 border-b border-border">
                 {dimensions.map((dim) => (
                     <button
                         key={dim.id}
