@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     DEFAULT_QUERY_MODEL: str = "openai:gpt-4o-mini"
     DEFAULT_SYNTHESIS_MODEL: str = "openai:gpt-4o"
     
+    # Testing Controls
+    TEST_PILLARS_ALLOWLIST: str = "*" # Comma separated IDs, or * for all
+    
     # Search
     TAVILY_API_KEY: str | None = None
     FIRECRAWL_API_KEY: str | None = None
