@@ -18,6 +18,7 @@ class PrepEngine:
         pillars = self.supabase.table("pillar_definitions").select("*").execute()
         
         active_pillars = pillars.data
+        if not active_pillars:
             # Fallback for MVP if no pillars defined yet
             active_pillars = [{"id": "econ_engine", "name": "Economic Engine"}]
 
