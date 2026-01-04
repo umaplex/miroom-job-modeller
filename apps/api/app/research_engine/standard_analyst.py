@@ -63,7 +63,8 @@ class StandardAnalyst(BaseAnalyst):
         strategy = self.pillar.get('search_strategy_prompt', 'Find general info')
         
         # Safe domain handling - Handle both NoneType and string "None"
-        domain = str(self.org.get('domain', '') or '')
+        raw_domain = self.org.get('domain')
+        domain = str(raw_domain or '')
         if domain.strip().lower() == 'none': 
             domain = ""
         target = f"{self.org['name']} {domain}".strip()
@@ -73,19 +74,31 @@ class StandardAnalyst(BaseAnalyst):
         target_fields = [f['name'] for f in fields]
         field_context = ", ".join(target_fields[:20])
         
+        # DEBUG: Trace the inputs
+        print(f"[StandardAnalyst] DEBUG: Org Name='{self.org['name']}', Raw Domain='{raw_domain}', Clean Target='{target}'")
+
         system_prompt = (
             "You are a Research Analyst. Generate 3 specific search queries to find information "
             f"about the '{self.pillar['name']}' for the organization '{target}'.\n"
             f"Strategy: {strategy}\n"
             f"Focus specifically on finding data for these metrics: {field_context}\n"
-            "Return ONLY a JSON array of strings, e.g. [\"query1\", \"query2\"]"
+            "Constraints:\n"
+            "1. Return ONLY a JSON array of strings, e.g. [\"query1\", \"query2\"]\n"
+            "2. Do NOT include the word 'None' or 'null' in the queries.\n"
+            "3. If the domain is unknown, search by Company Name only."
         )
         
+        # DEBUG: Log prompt to see what LLM sees
+        self.log_audit("DEBUG", {"step": "QUERY_PROMPT_CHECK", "prompt_snippet": system_prompt[:200]}, audience="ADMIN")
+
         try:
             llm = ModelFactory.get_configured_model(settings.DEFAULT_QUERY_MODEL)
             response = llm.invoke(system_prompt)
             content = response.content.replace("```json", "").replace("```", "").strip()
             queries = json.loads(content)
+            
+            # Post-Process: Strip 'None' if LLM ignored instructions
+            queries = [q.replace(" None ", " ").replace("None", "").strip() for q in queries]
             
             self.log_audit("QUERY_GEN", {"strategy": strategy}, {"queries": queries}, model=settings.DEFAULT_QUERY_MODEL)
             return queries[:5]
