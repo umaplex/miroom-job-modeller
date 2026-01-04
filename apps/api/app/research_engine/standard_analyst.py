@@ -61,7 +61,12 @@ class StandardAnalyst(BaseAnalyst):
         Uses LLM + Pillar Strategy to generate search queries.
         """
         strategy = self.pillar.get('search_strategy_prompt', 'Find general info')
-        target = f"{self.org['name']} ({self.org.get('domain', '')})"
+        
+        # Safe domain handling
+        domain = self.org.get('domain')
+        if domain is None: 
+            domain = ""
+        target = f"{self.org['name']} {domain}".strip()
         
         # KEY IMPROVEMENT: Tell the Hunter exactly what fields we need
         target_fields = [f['name'] for f in fields]

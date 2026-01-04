@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     
     # Model Configuration (Format: "provider:model_name")
     # e.g. "openai:gpt-4o-mini", "anthropic:claude-3-haiku", "gemini:gemini-pro"
-    DEFAULT_QUERY_MODEL: str = "openai:gpt-4o-mini"
+    DEFAULT_QUERY_MODEL: str = "openai:gpt-4o" # Upgrade to 4o for better query generation
     DEFAULT_SYNTHESIS_MODEL: str = "openai:gpt-4o"
     
     # Testing Controls
