@@ -29,9 +29,7 @@ def get_prep_engine(sb: Client = Depends(get_supabase)) -> PrepEngine:
     return PrepEngine(sb)
 
 # Schemas
-class IngestRequest(BaseModel):
-    url: str
-    user_id: str # Sent from frontend (extracted from auth session there)
+from app.schemas import IngestRequest, ObservationUpdate
 
 # Endpoints
 
@@ -86,6 +84,26 @@ async def get_org_endpoint(
     if not res:
         raise HTTPException(status_code=404, detail="Org not found")
     return res
+
+@app.get("/orgs/{org_id}/dossier")
+async def get_dossier_endpoint(
+    org_id: str,
+    org_service: OrgService = Depends(get_org_service)
+):
+    return await org_service.get_structured_dossier(org_id)
+
+@app.patch("/observations/{obs_id}")
+async def update_observation_endpoint(
+    obs_id: str,
+    payload: ObservationUpdate,
+    org_service: OrgService = Depends(get_org_service)
+):
+    # Convert Pydantic to dict, excluding defaults/None if we want partial updates
+    # But for full replacement lists (evidence), we need the explicit value.
+    # exclude_unset=True is safer for partial updates.
+    data = payload.dict(exclude_unset=True)
+    await org_service.update_observation(obs_id, data)
+    return {"status": "success"}
 
 if __name__ == "__main__":
     import uvicorn

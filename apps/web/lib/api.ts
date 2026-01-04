@@ -1,11 +1,7 @@
 // Ensure this logic runs on both server and client
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
-if (!API_URL) {
-    console.error('❌ FATAL: NEXT_PUBLIC_API_URL is missing!')
-} else {
-    console.log('✅ API Configured:', API_URL)
-}
+// API Configuration
 
 // Fallback is DANGEROUS in prod, so we remove it to expose the config error
 // Remove trailing slash if present to prevent double-slashes in requests
@@ -49,4 +45,30 @@ export async function fetchOrg(id: string) {
         throw new Error('Failed to fetch Org')
     }
     return await res.json()
+}
+
+export async function fetchStructuredDossier(orgId: string) {
+    try {
+        const res = await fetch(`${FINAL_URL}/orgs/${orgId}/dossier`)
+        if (!res.ok) throw new Error('Failed to fetch dossier')
+        return await res.json()
+    } catch (e) {
+        console.error(e)
+        return null
+    }
+}
+
+export async function updateObservation(id: string, data: any) {
+    try {
+        const res = await fetch(`${FINAL_URL}/observations/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        if (!res.ok) throw new Error('Failed to update observation')
+        return await res.json()
+    } catch (e) {
+        console.error(e)
+        throw e
+    }
 }

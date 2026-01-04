@@ -30,7 +30,9 @@ class OrgService:
                 "domain": norm.domain,
                 "display_name": norm.display_name,
                 "main_url": norm.cleaned_url,
-                "status": "PREP_INITIALIZED"
+                "status": "PREP_INITIALIZED",
+                "company_size": "SERIES_B", # Default for MVP
+                "industry": "SAAS_B2B_B2C"  # Default for MVP
             }
             res = self.supabase.table("organizations").insert(new_org).execute()
             if res.data:
@@ -105,3 +107,53 @@ class OrgService:
             .limit(5)\
             .execute()
         return res.data
+
+    async def get_structured_dossier(self, org_id: str):
+        # 1. Fetch Metadata (Rubric)
+        # We fetch Dimensions and nested Fields. Pillar ID is on Dimension.
+        # This assumes we want ALL defined fields even if empty for this Org.
+        dims_res = self.supabase.table("dimension_definitions")\
+            .select("*, field_definitions(*)")\
+            .order("order_index")\
+            .execute()
+        
+        dims_data = dims_res.data or []
+        
+        # 2. Fetch Instance Data (Facts)
+        # Observations + Nested Evidence
+        obs_res = self.supabase.table("org_field_observations")\
+            .select("*, org_field_evidence(*)")\
+            .eq("org_id", org_id)\
+            .execute()
+            
+        obs_map = {obs['field_id']: obs for obs in (obs_res.data or [])}
+
+        # 3. Assemble the Tree
+        # Group Dimensions by Pillar
+        pillars_map = {}
+        
+        for dim in dims_data:
+            p_id = dim['pillar_id']
+            if p_id not in pillars_map:
+                pillars_map[p_id] = []
+            
+            # Map Fields to include their Observation if exists
+            fields_with_obs = []
+            for field in dim.get('field_definitions', []):
+                # Attach observation if we have one
+                obs = obs_map.get(field['id'])
+                if obs:
+                    # Clean up nested structure for Pydantic if needed, 
+                    # but Supabase returns dicts which Pydantic handles well.
+                    # Just ensure 'evidence' key matches 'org_field_evidence' from DB join if names differ.
+                    # DB uses 'org_field_evidence', Schema uses 'evidence'. Let's rename for consistency.
+                    obs['evidence'] = obs.pop('org_field_evidence', [])
+                
+                field['current_observation'] = obs
+                fields_with_obs.append(field)
+            
+            dim['fields'] = fields_with_obs
+            pillars_map[p_id].append(dim)
+
+        return pillars_map
+

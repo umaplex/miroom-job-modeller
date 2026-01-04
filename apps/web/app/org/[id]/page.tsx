@@ -1,209 +1,214 @@
 'use client'
 
-import { GlobalNav } from '@/components/global-nav'
-import { fetchOrg } from '@/lib/api'
+import { fetchOrg, fetchStructuredDossier } from '@/lib/api'
 import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { useOrgRealtime } from '@/hooks/use-org-realtime'
-import { LiveFeed } from '@/components/live-feed'
 import Link from 'next/link'
 import { TeaserCard } from '@/components/teaser-card'
 import { UpgradeModal } from '@/components/upgrade-modal'
+import { StructuredView } from '@/components/structured-view'
+import { VitalSigns } from '@/components/vital-signs'
 
 export default function OrgPage() {
     const params = useParams()
-    const [data, setData] = useState<any>(null)
-    const [loading, setLoading] = useState(true)
-    const [activeTab, setActiveTab] = useState('econ_engine')
-    const [showUpgradeModal, setShowUpgradeModal] = useState(false)
-
-    // Realtime Hooks
-    const { logs, pillarStatuses } = useOrgRealtime(params.id as string)
+    const [org, setOrg] = useState<any>(null)
+    const [pillars, setPillars] = useState<any[]>([])
+    const [dossier, setDossier] = useState<any>(null)
+    const [activeTab, setActiveTab] = useState('general')
+    const [isUpgradeOpen, setIsUpgradeOpen] = useState(false)
+    const [isEditMode, setIsEditMode] = useState(false)
 
     useEffect(() => {
-        const load = async () => {
-            if (params.id) {
-                try {
-                    const res = await fetchOrg(params.id as string)
-                    setData(res)
-                    // Default to first pillar if valid
-                    if (res && res.pillars && res.pillars.length > 0) {
-                        setActiveTab(res.pillars[0].pillar_id)
+        if (params.id) {
+            // 1. Fetch Org & Basic Pillar Status
+            fetchOrg(params.id as string).then(res => {
+                if (res) {
+                    setOrg(res.org)
+                    setPillars(res.pillars || [])
+                    // Default to GENERAL if available
+                    if (res.pillars) {
+                        const hasGeneral = res.pillars.find((p: any) => p.pillar_id === 'general')
+                        setActiveTab(hasGeneral ? 'general' : res.pillars[0]?.pillar_id || 'general')
                     }
-                } catch (e) {
-                    console.error(e)
                 }
-            }
-            setLoading(false)
+            })
+
+            // 2. Fetch Structured Dossier (Full Tree)
+            fetchStructuredDossier(params.id as string).then(res => {
+                if (res) setDossier(res)
+            })
         }
-        load()
     }, [params.id])
 
-    if (loading) return <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground font-mono text-xs">LOADING DOSSIER...</div>
-    if (!data) return <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground font-mono text-xs">ORGANIZATION NOT FOUND</div>
+    if (!org) return <div className="p-8 text-muted-foreground font-mono">Loading signal...</div>
 
-    const { org, pillars } = data
+    const activePillar = pillars.find(p => p.pillar_id === activeTab)
+    const isLocked = activePillar?.status === 'LOCKED'
 
-    // merge live status with initial status
-    const getStatus = (pId: string) => {
-        return pillarStatuses[pId] || pillars.find((p: any) => p.pillar_id === pId)?.status || 'PENDING'
+    // Helper: Teaser Content Map (could be from DB later)
+    const TEASERS: any = {
+        'burning_platform': {
+            question: "What is the single biggest threat to their Q4 goals?",
+            risk: "Missing this means proposing a 'nice-to-have' solution instead of a cure."
+        },
+        'domain_lexicon': {
+            question: "Do you know what 'Project Skyfire' refers to internally?",
+            risk: "Using the wrong acronyms immediately signals you are an outsider."
+        },
+        'decision_making': {
+            question: "Who is the 'Shadow Decision Maker' in Engineering?",
+            risk: "You might be pitching to the wrong person for weeks."
+        }
     }
 
-    const isWarRoomActive = pillars.some((p: any) => {
-        const s = getStatus(p.pillar_id)
-        return s === 'SEARCHING' || s === 'SYNTHESIZING' || s === 'PENDING'
-    })
-
     return (
-        <div className="min-h-screen bg-background text-foreground flex flex-col">
-            <GlobalNav />
-
-            <div className="flex flex-1 overflow-hidden h-[calc(100vh-3.5rem)]">
-                {/* Sidebar Navigation */}
-                <aside className="w-64 border-r border-border bg-card/30 flex flex-col">
-                    <div className="p-4 border-b border-border">
-                        <Link href="/dashboard" className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 mb-4">
-                            ← Back to Command
+        <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/20">
+            {/* Header / Nav (Simplified) */}
+            <header className="border-b border-border sticky top-0 z-10 bg-background/80 backdrop-blur-md">
+                <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <Link href="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
                         </Link>
-                        <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded bg-muted flex items-center justify-center text-sm font-bold text-muted-foreground border border-border">
-                                {org.display_name?.substring(0, 2).toUpperCase()}
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <div className={`w-2 h-2 rounded-full ${isEditMode ? 'bg-amber-500' : 'bg-emerald-500'} animate-pulse`} />
+                                <span className={`text-[10px] font-mono uppercase tracking-widest ${isEditMode ? 'text-amber-500' : 'text-emerald-500'}`}>
+                                    {isEditMode ? 'ADMIN EDITING' : 'Live Analysis'}
+                                </span>
                             </div>
                             <div className="overflow-hidden">
                                 <h1 className="font-bold text-foreground truncate">{org.display_name}</h1>
-                                <div className="text-xs text-muted-foreground truncate">{org.domain}</div>
+                                <div className="text-xs text-muted-foreground truncate mb-1">{org.domain}</div>
+                                <div className="flex gap-1">
+                                    {org.company_size && <span className="text-[9px] px-1.5 py-0.5 rounded border border-border text-muted-foreground bg-muted">{org.company_size.replace(/_/g, ' ')}</span>}
+                                    {org.industry && <span className="text-[9px] px-1.5 py-0.5 rounded border border-border text-muted-foreground bg-muted truncate max-w-[80px]">{org.industry.replace(/_/g, ' ')}</span>}
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <nav className="flex-1 overflow-y-auto p-4 space-y-6">
-                        {/* Foundation Group */}
-                        <div>
-                            <h3 className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-widest mb-2">Foundation</h3>
-                            <div className="space-y-1">
-                                {['econ_engine', 'org_dna'].map(id => (
-                                    <button
-                                        key={id}
-                                        onClick={() => setActiveTab(id)}
-                                        className={`w-full text-left px-3 py-2 rounded text-sm transition-colors flex items-center justify-between group ${activeTab === id ? 'bg-muted text-foreground font-medium' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}
-                                    >
-                                        <span>{id.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-                                        {getStatus(id) === 'COMPLETED' && <span className="w-2 h-2 rounded-full bg-emerald-500"></span>}
-                                        {(getStatus(id) === 'SEARCHING' || getStatus(id) === 'SYNTHESIZING') && <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
+                    {/* Admin Toggle */}
+                    <button
+                        onClick={() => setIsEditMode(!isEditMode)}
+                        className={`text-xs px-3 py-1.5 rounded-full border transition-colors font-mono uppercase tracking-wider flex items-center gap-2 ${isEditMode ? 'bg-amber-500/10 text-amber-500 border-amber-500/50' : 'text-muted-foreground border-border hover:bg-muted'}`}
+                    >
+                        {isEditMode ? (
+                            <>
+                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                Exit Edit
+                            </>
+                        ) : (
+                            <>
+                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                Edit
+                            </>
+                        )}
+                    </button>
+                </div>
+            </header>
 
-                        {/* Intelligence Group */}
-                        <div>
-                            <div className="flex items-center justify-between mb-2">
-                                <h3 className="text-[10px] font-mono font-bold text-indigo-400 uppercase tracking-widest">Intelligence</h3>
-                                <svg className="w-3 h-3 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                            </div>
-                            <div className="space-y-1">
-                                {['burning_platform', 'domain_lexicon', 'decision_making'].map(id => (
-                                    <button
-                                        key={id}
-                                        onClick={() => setActiveTab(id)}
-                                        className={`w-full text-left px-3 py-2 rounded text-sm transition-colors flex items-center justify-between group ${activeTab === id ? 'bg-indigo-500/10 text-indigo-500 font-medium' : 'text-muted-foreground hover:text-indigo-500 hover:bg-indigo-500/5'}`}
-                                    >
-                                        <span>{id.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-                                        {/* Lock Icon if not paid (Placeholder logic) */}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    </nav>
+            <main className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-8 p-6">
 
-                    <div className="p-4 border-t border-border bg-muted/30">
-                        <div className="text-xs text-muted-foreground flex justify-between mb-2">
-                            <span>Credits</span>
-                            <span className="text-foreground">5 / 10</span>
+                {/* Left: Navigation */}
+                <aside className="space-y-8">
+                    {/* Foundation */}
+                    <div>
+                        <h3 className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-widest mb-2">Foundation</h3>
+                        <div className="space-y-1">
+                            {['general', 'econ_engine', 'org_dna'].map(id => (
+                                <button
+                                    key={id}
+                                    onClick={() => setActiveTab(id)}
+                                    className={`w-full text-left px-3 py-2 text-sm rounded transition-colors ${activeTab === id ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground hover:bg-muted'}`}
+                                >
+                                    {id === 'general' ? 'Vital Signs' : id.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                </button>
+                            ))}
                         </div>
-                        <div className="w-full bg-muted h-1.5 rounded-full overflow-hidden">
-                            <div className="bg-primary h-full w-1/2"></div>
+                    </div>
+
+                    {/* Intelligence (Pillars) */}
+                    <div>
+                        <h3 className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-widest mb-2">Intelligence</h3>
+                        <div className="space-y-1">
+                            {['burning_platform', 'domain_lexicon', 'decision_making'].map(id => (
+                                <button
+                                    key={id}
+                                    onClick={() => setActiveTab(id)}
+                                    className={`w-full text-left px-3 py-2 text-sm rounded transition-colors flex items-center justify-between group ${activeTab === id ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground hover:bg-muted'}`}
+                                >
+                                    <span>{id.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
+                                    <svg className="w-3 h-3 opacity-0 group-hover:opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 15l-3-3m0 0l3-3m-3 3h8" /></svg>
+                                </button>
+                            ))}
                         </div>
                     </div>
                 </aside>
 
-                {/* Main Stage */}
-                <main className="flex-1 flex flex-col md:flex-row h-full overflow-hidden relative">
-
-                    {/* Content Area */}
-                    <div className="flex-1 overflow-y-auto p-8 relative z-10">
-                        <div className="max-w-3xl mx-auto">
-                            <h2 className="text-2xl font-bold text-foreground mb-6 uppercase tracking-tight flex items-center gap-3">
-                                {activeTab.replace('_', ' ')}
-                                <span className={`text-xs px-2 py-1 rounded border ${getStatus(activeTab) === 'COMPLETED' ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10' : 'border-amber-500/30 text-amber-400 bg-amber-500/10'}`}>
-                                    {getStatus(activeTab)}
-                                </span>
+                {/* Center: Dossier Content */}
+                <section className="lg:col-span-2 space-y-6">
+                    <div className="bg-card border border-border rounded-xl p-6 min-h-[500px] shadow-sm">
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-xl font-bold text-foreground font-mono uppercase tracking-tight">
+                                {activeTab === 'general' ? 'Vital Signs' : activeTab.replace('_', ' ')}
                             </h2>
+                            <div className="text-[10px] bg-muted text-muted-foreground px-2 py-1 rounded font-mono">
+                                V1.2 • AUTO-GENERATED
+                            </div>
+                        </div>
 
-                            {/* Render Content */}
-                            {activeTab ? (
-                                <div className="prose prose-invert prose-sm max-w-none">
-                                    {/* Check if Pillar is Intelligence (Mock Logic: burning_platform, etc are locked) */}
-                                    {['burning_platform', 'domain_lexicon', 'decision_making'].includes(activeTab) ? (
-                                        <TeaserCard
-                                            pillarId={activeTab}
-                                            orgName={org.display_name}
-                                            questionHook={
-                                                activeTab === 'burning_platform' ? "I found a critical strategic disagreement regarding their 2026 AI Roadmap." :
-                                                    activeTab === 'decision_making' ? "Don't show slides. They are a 6-page memo culture." :
-                                                        "Key lexicon shift: Stop saying 'User', start saying 'Partner'."
-                                            }
-                                            riskCopy="If you don't address this in your interview, you risk sounding like an outsider."
-                                        />
-                                    ) : (
-                                        <div className="bg-card/50 border border-border rounded p-8 min-h-[400px]">
-                                            {getStatus(activeTab) === 'COMPLETED' ? (
-                                                <div>
-                                                    <p className="text-muted-foreground leading-relaxed">
-                                                        Based on the analysis of <strong>{org.display_name}</strong>, here is the {activeTab.replace('_', ' ')} breakdown...
-                                                    </p>
-
-                                                    {/* Mock Data for Foundation */}
-                                                    <div className="mt-6 grid grid-cols-2 gap-4">
-                                                        <div className="p-4 bg-muted/50 rounded border border-border">
-                                                            <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Revenue Model</div>
-                                                            <div className="text-foreground font-bold">Consumption-based</div>
-                                                        </div>
-                                                        <div className="p-4 bg-muted/50 rounded border border-border">
-                                                            <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Key Growth Lever</div>
-                                                            <div className="text-foreground font-bold">Enterprise Expansion</div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <div className="flex flex-col items-center justify-center h-full text-muted-foreground space-y-4">
-                                                    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                                                    <p>Analysis in progress...</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
+                        {TEASERS[activeTab] ? (
+                            // Locked Pillar -> Teaser
+                            <TeaserCard
+                                title={activeTab.replace('_', ' ').toUpperCase()}
+                                question={TEASERS[activeTab].question}
+                                risk={TEASERS[activeTab].risk}
+                                onUnlock={() => setIsUpgradeOpen(true)}
+                            />
+                        ) : (
+                            // Unlocked -> Content
+                            <div className="space-y-6 animate-in fade-in duration-500">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                    <span className="text-sm font-mono text-emerald-500">Analysis Complete</span>
                                 </div>
-                            ) : (
-                                <div className="text-zinc-500 italic">Select a pillar to view analysis.</div>
-                            )}
-                        </div>
+
+                                <p className="text-muted-foreground leading-relaxed">
+                                    Based on the analysis of <strong>{org.display_name}</strong>, here is the {activeTab.replace('_', ' ')} breakdown...
+                                </p>
+
+                                {/* Render Structured Dossier if available, else Mock Data or Placeholder */}
+                                {dossier && dossier[activeTab] ? (
+                                    <div className="mt-8">
+                                        <StructuredView dimensions={dossier[activeTab]} isEditing={isEditMode} />
+                                    </div>
+                                ) : activeTab === 'general' ? (
+                                    /* Fallback for General if no dossier yet */
+                                    <div className="mt-6">
+                                        <VitalSigns content={pillars.find((p: any) => p.pillar_id === 'general')?.content} />
+                                    </div>
+                                ) : (
+                                    <div className="mt-12 text-center p-8 border border-dashed border-border rounded bg-muted/30">
+                                        <p className="text-muted-foreground italic">initializing structured model...</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
+                </section>
 
-                    {/* War Room Right Rail (Visible only during build or if toggle is on) */}
-                    {isWarRoomActive && (
-                        <div className="w-80 border-l border-border bg-card p-4 border-t md:border-t-0 absolute md:relative bottom-0 right-0 h-[30%] md:h-full z-20 shadow-2xl md:shadow-none">
-                            <LiveFeed logs={logs} />
-                        </div>
-                    )}
-                </main>
-            </div>
+                {/* Right: Actions (Placeholder) */}
+                <aside className="space-y-6">
+                    <div className="bg-card border border-border rounded p-4">
+                        <h3 className="text-xs font-bold font-mono text-muted-foreground uppercase tracking-widest mb-3">Actions</h3>
+                        <button className="w-full text-left text-sm text-primary hover:underline mb-2">Export PDF Report</button>
+                        <button className="w-full text-left text-sm text-primary hover:underline">Share with Team</button>
+                    </div>
+                </aside>
+            </main>
 
-            <UpgradeModal
-                isOpen={showUpgradeModal}
-                onClose={() => setShowUpgradeModal(false)}
-                orgName={org.display_name}
-            />
+            <UpgradeModal isOpen={isUpgradeOpen} onClose={() => setIsUpgradeOpen(false)} />
         </div>
     )
 }

@@ -75,10 +75,21 @@ class PrepEngine:
             log("Synthesizing insights...", "LLM_REASONING")
 
             # Finalize
-            mock_content = {
-                "summary": "This is a generated insight for MVP 1.",
-                "metrics": {"av_revenue": "$100M"}
-            }
+            # Finalize
+            if pillar_id == 'general':
+                mock_content = {
+                    "summary": "General Vital Signs Analysis",
+                    "metrics": {
+                        "headcount_velocity": "+15% YoY",
+                        "talent_density": "High (ex-Google, Stripe)",
+                        "leadership_stability": "Stable (CEO 4y)"
+                    }
+                }
+            else:
+                mock_content = {
+                    "summary": f"This is a generated insight for {pillar_id}.",
+                    "metrics": {"av_revenue": "$100M"}
+                }
             
             self.supabase.table("org_pillar_data").upsert({
                 "org_id": org_id, 
