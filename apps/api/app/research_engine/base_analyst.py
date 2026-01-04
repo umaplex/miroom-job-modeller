@@ -55,6 +55,40 @@ class BaseAnalyst(ABC):
                 "latency_ms": latency_ms
             }
             self.supabase.table("research_audit_logs").insert(payload).execute()
+
+            # --- DUAL LOGGING: Write to prep_logs for "Neural Feed" UI ---
+            # Define human-friendly messages for key steps
+            user_msg = None
+            audience = "ADMIN" # Default to hidden
+            
+            if step_type == "QUERY_GEN":
+                user_msg = f"Generated search strategies based on {self.pillar['name']} rubric."
+                audience = "USER"
+            elif step_type == "SEARCH":
+                query_count = len(output_result.get('urls', [])) if output_result else 0
+                user_msg = f"Deep Search via {provider}: Found {query_count} relevant sources."
+                audience = "USER"
+            elif step_type == "SCRAPE":
+                bytes_len = output_result.get('bytes', 0) if output_result else 0
+                user_msg = f"Reading & Extracting content from {len(input_context.get('urls', []))} pages ({bytes_len} bytes)."
+                audience = "USER"
+            elif step_type == "SYNTHESIS":
+                count = output_result.get('count', 0) if output_result else 0
+                user_msg = f"Synthesizing {count} data points using {model}."
+                audience = "USER"
+            elif step_type == "ERROR":
+                user_msg = f"Error in {input_context.get('step', 'process')}: {input_context.get('error', 'unknown error')}"
+                audience = "ADMIN" # Users see "Failed", Admins see details
+
+            if user_msg:
+                 self.supabase.table("prep_logs").insert({
+                    "org_id": self.org['id'],
+                    "pillar_id": self.pillar['id'],
+                    "internal_code": step_type,
+                    "display_text": user_msg,
+                    "audience": audience
+                }).execute()
+                
         except Exception as e:
             logger.error(f"Failed to write audit log: {e}")
 
