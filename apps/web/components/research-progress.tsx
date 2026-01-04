@@ -12,6 +12,7 @@ export function ResearchProgress() {
 
     // UI State
     const [isOpen, setIsOpen] = useState(true) // Always open initially if researching
+    const [isVisible, setIsVisible] = useState(true)
     const bottomRef = useRef<HTMLDivElement>(null)
     const supabase = createClient()
 
@@ -25,6 +26,15 @@ export function ResearchProgress() {
         const interval = setInterval(refreshState, 2000)
         return () => clearInterval(interval)
     }, [params.id])
+
+    // Auto-minimize when research completes
+    useEffect(() => {
+        if (statuses.length > 0 && activePillars.length === 0) {
+            // All done, hide entire component after 5s
+            const timer = setTimeout(() => setIsVisible(false), 5000)
+            return () => clearTimeout(timer)
+        }
+    }, [activePillars.length, statuses.length])
 
     // Auto-scroll to bottom of logs
     useEffect(() => {
@@ -76,8 +86,8 @@ export function ResearchProgress() {
         return 'text-slate-400'
     }
 
-    // Don't show anything if no work has ever started (empty statuses)
-    if (statuses.length === 0) return null
+    // Don't show anything if no work has ever started (empty statuses), or if explicitly hidden
+    if (statuses.length === 0 || !isVisible) return null
 
     return (
         <div className="border-b border-border bg-muted/30">
@@ -88,7 +98,7 @@ export function ResearchProgress() {
                     <div className="flex items-center gap-4">
                         <h2 className="text-xs font-mono font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                             <div className={`w-2 h-2 rounded-full ${activePillars.length > 0 ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
-                            Research OS Kernel
+                            Deep Research Analyst
                         </h2>
 
                         {/* Summary Chips */}
@@ -120,7 +130,7 @@ export function ResearchProgress() {
                     <div className="bg-zinc-950 rounded-lg border border-zinc-800 p-4 font-mono text-xs shadow-inner">
                         <div className="h-[200px] overflow-y-auto pr-2 space-y-1 custom-scrollbar">
                             {logs.length === 0 && (
-                                <div className="text-zinc-500 italic">Waiting for satellite uplink...</div>
+                                <div className="text-zinc-500 italic">Initializing research workspace...</div>
                             )}
                             {logs.map((log) => (
                                 <div key={log.id} className="flex gap-3 font-mono leading-relaxed group">

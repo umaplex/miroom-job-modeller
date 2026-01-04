@@ -122,7 +122,7 @@ export default function OrgPage() {
                 {!org ? (
                     // Loading Skeleton
                     <div className="col-span-full py-12 text-center text-muted-foreground font-mono animate-pulse">
-                        Configuring Satellite Uplink...
+                        Loading Organization Data...
                     </div>
                 ) : (
                     <>
