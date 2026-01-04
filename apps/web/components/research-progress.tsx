@@ -101,19 +101,22 @@ export function ResearchProgress() {
                             Deep Research Analyst
                         </h2>
 
-                        {/* Summary Chips */}
-                        <div className="flex gap-2">
-                            {statuses.map(s => (
-                                <div key={s.id} className={`
-                                   text-[10px] font-mono px-2 py-0.5 rounded border capitalize
-                                   ${s.status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : ''}
-                                   ${s.status === 'FAILED' ? 'bg-red-500/10 text-red-600 border-red-500/20' : ''}
-                                   ${['SEARCHING', 'SYNTHESIZING'].includes(s.status) ? 'bg-blue-500/10 text-blue-600 border-blue-500/20 animate-pulse' : ''}
-                                   ${s.status === 'PENDING' ? 'bg-slate-100 text-slate-500 border-slate-200' : ''}
-                               `}>
-                                    {s.pillar_id.replace('_', ' ')}: {s.status.toLowerCase()}
-                                </div>
-                            ))}
+                        {/* Summary Chips (Vertical + Emoji) */}
+                        <div className="flex flex-col gap-1">
+                            {statuses.map(s => {
+                                let icon = '⏳' // Pending
+                                if (s.status === 'SEARCHING') icon = '🔍'
+                                if (s.status === 'SYNTHESIZING') icon = '🧠'
+                                if (s.status === 'COMPLETED') icon = '✅'
+                                if (s.status === 'FAILED') icon = '❌'
+
+                                return (
+                                    <div key={s.id} className="text-[10px] font-mono text-muted-foreground flex items-center gap-2">
+                                        <span className="text-sm shadow-sm">{icon}</span>
+                                        <span className="capitalize">{s.pillar_id.replace('_', ' ')}</span>
+                                    </div>
+                                )
+                            })}
                         </div>
                     </div>
 
