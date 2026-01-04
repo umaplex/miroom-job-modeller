@@ -32,12 +32,15 @@ export default function DashboardPage() {
                     setRecents(recentOrgs)
 
                     // Update "My Targets" metric locally just for show
-                    PULSE_METRICS[2].value = recentOrgs.length.toString()
+                    if (recentOrgs) PULSE_METRICS[2].value = recentOrgs.length.toString()
                 } catch (e) {
                     console.log("API not ready yet, showing empty")
+                } finally {
+                    setLoading(false)
                 }
+            } else {
+                setLoading(false)
             }
-            setLoading(false)
         }
         init()
     }, [])

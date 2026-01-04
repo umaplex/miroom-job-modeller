@@ -130,7 +130,8 @@ class StandardAnalyst(BaseAnalyst):
             if settings.TAVILY_API_KEY:
                 tavily = TavilyClient(api_key=settings.TAVILY_API_KEY)
                 for q in queries[:2]:
-                    resp = tavily.search(query=q, search_depth="basic", max_results=2)
+                    # BLOCKING CALL FIX: Run sync SDK in thread
+                    resp = await asyncio.to_thread(tavily.search, query=q, search_depth="basic", max_results=2)
                     for result in resp.get('results', []):
                         urls_to_scrape.append(result['url'])
                 
@@ -154,7 +155,8 @@ class StandardAnalyst(BaseAnalyst):
         
         for url in urls_to_scrape[:3]: 
             try:
-                scrape_res = firecrawl.scrape_url(url, params={'formats': ['markdown']})
+                # BLOCKING CALL FIX: Run sync SDK in thread
+                scrape_res = await asyncio.to_thread(firecrawl.scrape_url, url, params={'formats': ['markdown']})
                 markdown = scrape_res.get('markdown', '')
                 
                 if markdown:
