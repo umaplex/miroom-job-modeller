@@ -43,7 +43,8 @@ export default function OrgPage() {
     if (!org) return <div className="p-8 text-muted-foreground font-mono">Loading signal...</div>
 
     const activePillar = pillars.find(p => p.pillar_id === activeTab)
-    const isLocked = activePillar?.status === 'LOCKED'
+    // TEMP: Force unlock for testing per user request
+    const isLocked = false // activePillar?.status === 'LOCKED'
 
     // Helper: Teaser Content Map (could be from DB later)
     const TEASERS: any = {
