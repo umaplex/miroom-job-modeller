@@ -90,16 +90,36 @@ class BaseAnalyst(ABC):
                 }).execute()
 
             # --- DEBUG LOGGING (ADMIN ONLY) ---
-            # Also log specific details for Admins to debug "Why did it miss NRR?"
+            # Comprehensive audit trial: Log hits AND misses
             debug_msg = None
             if step_type == "QUERY_GEN":
                  queries = input_context.get('queries', []) or output_result.get('queries', [])
                  if queries:
-                     debug_msg = f"DEBUG: Queries generated: {str(queries)}"
+                     debug_msg = f"DEBUG: Generated {len(queries)} queries: {str(queries)}"
+                 else:
+                     debug_msg = "DEBUG: WARNING - No queries were generated. Discovery phase effectively skipped."
+
             elif step_type == "SEARCH":
                  urls = output_result.get('urls', [])
                  if urls:
-                     debug_msg = f"DEBUG: Sources found: {str(urls)}"
+                     debug_msg = f"DEBUG: Search successful. Found {len(urls)} sources: {str(urls)}"
+                 else:
+                     debug_msg = "DEBUG: WARNING - Search returned 0 URLs. No external evidence found."
+
+            elif step_type == "SCRAPE":
+                 bytes_len = output_result.get('bytes', 0) if output_result else 0
+                 urls_count = len(input_context.get('urls', []))
+                 if bytes_len > 0:
+                     debug_msg = f"DEBUG: Scraped {urls_count} pages successfully. Total content: {bytes_len} chars."
+                 else:
+                     debug_msg = f"DEBUG: WARNING - Scrape of {urls_count} pages yielded 0 bytes of content."
+
+            elif step_type == "SYNTHESIS":
+                 count = output_result.get('count', 0) if output_result else 0
+                 if count > 0:
+                     debug_msg = f"DEBUG: Synthesis produced {count} observations."
+                 else:
+                     debug_msg = "DEBUG: WARNING - Synthesis loop produced 0 observations. LLM likely found no matching data in context."
 
             if debug_msg:
                  self.supabase.table("prep_logs").insert({
