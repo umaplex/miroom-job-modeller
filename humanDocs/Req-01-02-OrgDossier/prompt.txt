@@ -1,0 +1,21 @@
+I have placed 2 files
+hu-mvp1-orgspec-part6-a : The Research Analyst design
+hu-mvp1-orgspec-part6-thinkingloud : One way to approach the architecture
+
+Take these as inputs. 
+Additionally some comments
+I think we  might have evolutions OR A/B testing with Research Analyst. The data model & meta data strfucture is fixed. But I think we should design our research analyst flow keepting A/B in mind
+Assume we may change them in future. we should not be changing the code, rather keep these as difrent kinds of Research Analyust
+Assume these are different persoans we are implementating and we can change. Ensure the design accomodates taht. and audit data captures that
+We can name our Research agents with "Org Analyst"+"XXX" where XXX is a running number 
+
+
+I want you to perfrom the following
+1. Review the content
+2. Assess the current imlementation we have
+3. Report the following
+3a. Do we need any changes to the data model / infrasturecue of what we have doe so far
+3b. What is the new / incremental data model needed
+3c. What is your view on the provided architecture
+3d. Create a high level design & low level design ( including arch diagrams)
+4. Present for me to review
