@@ -60,12 +60,7 @@ class BaseAnalyst(ABC):
 
     async def get_field_definitions(self):
         """Helper to fetch rubric for this pillar"""
-        response = self.supabase.table("field_definitions")\
-            .select("*")\
-            .eq("dimension_id", f"{self.pillar['id']}.dimensions.id")\
-            .execute() 
-            # Note: The above is pseudo-query logic, in reality we need to join or fetch by pillar_id via dimensions
-            # Correcting query below
+
         
         # We need to find dimensions first
         dims = self.supabase.table("dimension_definitions").select("id").eq("pillar_id", self.pillar['id']).execute()
