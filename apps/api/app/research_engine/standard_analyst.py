@@ -62,12 +62,22 @@ class StandardAnalyst(BaseAnalyst):
         """
         strategy = self.pillar.get('search_strategy_prompt', 'Find general info')
         
-        # Safe domain handling - Handle both NoneType and string "None"
+        # Safe handling for BOTH Name and Domain (DB seems to have "None" strings)
         raw_domain = self.org.get('domain')
         domain = str(raw_domain or '')
-        if domain.strip().lower() == 'none': 
-            domain = ""
-        target = f"{self.org['name']} {domain}".strip()
+        if domain.strip().lower() == 'none': domain = ""
+
+        raw_name = self.org.get('name')
+        name = str(raw_name or '')
+        if name.strip().lower() == 'none': name = ""
+        
+        # Fallback: If name is bad but domain exists, use domain as name
+        if not name and domain:
+             name = domain
+        elif not name:
+             name = "Target Organization"
+
+        target = f"{name} {domain}".strip()
         
         # KEY IMPROVEMENT: Tell the Hunter exactly what fields we need
         # Increased limit to 20 to ensure we catch fields like 'AI Monetization' that might be lower in the list

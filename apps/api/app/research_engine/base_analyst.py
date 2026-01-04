@@ -29,7 +29,8 @@ class BaseAnalyst(ABC):
 
     def log_audit(self, step_type: str, input_context: dict, output_result: dict = None, 
                   provider: str = None, model: str = None, 
-                  tokens_in: int = 0, tokens_out: int = 0, cost_usd: float = 0.0, latency_ms: int = 0):
+                  tokens_in: int = 0, tokens_out: int = 0, cost_usd: float = 0.0, latency_ms: int = 0,
+                  audience: str = "USER"):
         """
         Writes to research_audit_logs table.
         """
