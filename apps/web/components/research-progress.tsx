@@ -96,7 +96,7 @@ export function ResearchProgress() {
                 {/* 1. Header & Controls */}
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-4">
-                        <h2 className="text-xs font-mono font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                        <h2 className="text-sm font-mono font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                             <div className={`w-2 h-2 rounded-full ${activePillars.length > 0 ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
                             Deep Research Analyst
                         </h2>
@@ -111,8 +111,8 @@ export function ResearchProgress() {
                                 if (s.status === 'FAILED') icon = '❌'
 
                                 return (
-                                    <div key={s.id} className="text-[10px] font-mono text-muted-foreground flex items-center gap-2">
-                                        <span className="text-sm shadow-sm">{icon}</span>
+                                    <div key={s.id} className="text-xs font-mono text-muted-foreground flex items-center gap-2">
+                                        <span className="text-base shadow-sm">{icon}</span>
                                         <span className="capitalize">{s.pillar_id.replace('_', ' ')}</span>
                                     </div>
                                 )
@@ -130,7 +130,7 @@ export function ResearchProgress() {
 
                 {/* 2. Neural Terminal Feed */}
                 {isOpen && (
-                    <div className="bg-zinc-950 rounded-lg border border-zinc-800 p-4 font-mono text-xs shadow-inner">
+                    <div className="bg-zinc-950 rounded-lg border border-zinc-800 p-4 font-mono text-sm shadow-inner">
                         <div className="h-[200px] overflow-y-auto pr-2 space-y-1 custom-scrollbar">
                             {logs.length === 0 && (
                                 <div className="text-zinc-500 italic">Initializing research workspace...</div>
