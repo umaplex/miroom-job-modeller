@@ -171,7 +171,7 @@ class StandardAnalyst(BaseAnalyst):
                         "structured_value": {"value": item.get("value")},
                         "analysis_markdown": item.get("analysis"),
                         "confidence_score": item.get("confidence", 0.5),
-                        "evidence": evidence_metadata if evidence_metadata else [],
+                        "evidence": metadata if metadata else [],
                         "is_synthetic": False
                     })
             
