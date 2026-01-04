@@ -8,6 +8,7 @@ import { TeaserCard } from '@/components/teaser-card'
 import { UpgradeModal } from '@/components/upgrade-modal'
 import { StructuredView } from '@/components/structured-view'
 import { VitalSigns } from '@/components/vital-signs'
+import { ResearchProgress } from '@/components/research-progress'
 
 export default function OrgPage() {
     const params = useParams()
@@ -108,6 +109,9 @@ export default function OrgPage() {
                     </button>
                 </div>
             </header>
+
+            {/* Live Research Banner */}
+            <ResearchProgress />
 
             <main className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-8 p-6">
 
