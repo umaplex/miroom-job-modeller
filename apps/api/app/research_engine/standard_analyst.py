@@ -62,15 +62,16 @@ class StandardAnalyst(BaseAnalyst):
         """
         strategy = self.pillar.get('search_strategy_prompt', 'Find general info')
         
-        # Safe domain handling
-        domain = self.org.get('domain')
-        if domain is None: 
+        # Safe domain handling - Handle both NoneType and string "None"
+        domain = str(self.org.get('domain', '') or '')
+        if domain.strip().lower() == 'none': 
             domain = ""
         target = f"{self.org['name']} {domain}".strip()
         
         # KEY IMPROVEMENT: Tell the Hunter exactly what fields we need
+        # Increased limit to 20 to ensure we catch fields like 'AI Monetization' that might be lower in the list
         target_fields = [f['name'] for f in fields]
-        field_context = ", ".join(target_fields[:5]) # Limit to top 5 to avoid prompt noise
+        field_context = ", ".join(target_fields[:20])
         
         system_prompt = (
             "You are a Research Analyst. Generate 3 specific search queries to find information "
