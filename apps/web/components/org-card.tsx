@@ -22,8 +22,8 @@ export function OrgCard({ id, name, domain, status, freshness, pillarsCompleted 
                     <div className="h-10 w-10 rounded bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
                         {name.substring(0, 2).toUpperCase()}
                     </div>
-                    <span className={`text-xs font-mono uppercase tracking-wider px-2 py-1 rounded-full ${isReady ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>
-                        {isReady ? 'READY' : 'PREP'}
+                    <span className={`text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded border ${isReady ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-amber-500/10 text-amber-500 border-amber-500/20'}`}>
+                        {isReady ? 'ACTIVE' : 'ANALYZING'}
                     </span>
                 </div>
 
@@ -34,12 +34,15 @@ export function OrgCard({ id, name, domain, status, freshness, pillarsCompleted 
 
                 <div className="flex items-center justify-between border-t border-border pt-4">
                     <div className="flex flex-col">
-                        <span className="text-xs text-muted-foreground uppercase tracking-wider">Context</span>
-                        <span className="text-base font-bold text-foreground">{pillarsCompleted}/5</span>
+                        <span className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">Coverage</span>
+                        <div className="flex items-center gap-1.5">
+                            <span className="text-sm font-bold text-foreground">{pillarsCompleted}/5</span>
+                            <span className="text-[10px] text-muted-foreground">Pillars</span>
+                        </div>
                     </div>
                     <div className="flex flex-col text-right">
-                        <span className="text-xs text-muted-foreground uppercase tracking-wider">Updated</span>
-                        <span className="text-sm text-muted-foreground">{freshness}</span>
+                        <span className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">Latest Intel</span>
+                        <span className="text-sm text-foreground font-medium">{freshness}</span>
                     </div>
                 </div>
             </div>
