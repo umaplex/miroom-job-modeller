@@ -191,6 +191,7 @@ class StandardAnalyst(BaseAnalyst):
             return
 
         for obs in observations:
+            try:
                 # Attempt 1: Full Save
                 try:
                     existing = self.supabase.table("org_field_observations")\
