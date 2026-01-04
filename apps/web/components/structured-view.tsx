@@ -38,24 +38,52 @@ interface Dimension {
 }
 
 export function StructuredView({ dimensions, isEditing }: { dimensions: Dimension[], isEditing: boolean }) {
+    const [activeDimId, setActiveDimId] = useState<string>(dimensions[0]?.id)
+
+    // Auto-select first dimension if data changes
+    useEffect(() => {
+        if (dimensions?.length > 0 && !activeDimId) {
+            setActiveDimId(dimensions[0].id)
+        }
+    }, [dimensions])
+
     if (!dimensions || dimensions.length === 0) {
         return <div className="text-muted-foreground italic p-4">No structured data available for this pillar.</div>
     }
 
+    const activeDim = dimensions.find(d => d.id === activeDimId) || dimensions[0]
+
     return (
-        <div className="space-y-10">
-            {dimensions.map((dim) => (
-                <section key={dim.id}>
-                    <h3 className="text-xs font-mono font-bold text-muted-foreground uppercase tracking-widest mb-4 pl-1 border-l-4 border-primary/20">
+        <div className="space-y-6">
+            {/* Dimension Chips */}
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none border-b border-border">
+                {dimensions.map((dim) => (
+                    <button
+                        key={dim.id}
+                        onClick={() => setActiveDimId(dim.id)}
+                        className={`
+                            px-4 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-wider whitespace-nowrap transition-all
+                            ${activeDimId === dim.id
+                                ? 'bg-primary text-primary-foreground shadow-md'
+                                : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'}
+                        `}
+                    >
                         {dim.name}
-                    </h3>
-                    <div className="grid gap-4">
-                        {dim.fields.map((field) => (
-                            <ObservationCard key={field.id} field={field} isGlobalEdit={isEditing} />
-                        ))}
-                    </div>
-                </section>
-            ))}
+                    </button>
+                ))}
+            </div>
+
+            {/* Active Dimension Content */}
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <h3 className="text-xs font-mono font-bold text-muted-foreground uppercase tracking-widest mb-4 pl-1 hidden">
+                    {activeDim.name}
+                </h3>
+                <div className="grid gap-3">
+                    {activeDim.fields.map((field) => (
+                        <ObservationCard key={field.id} field={field} isGlobalEdit={isEditing} />
+                    ))}
+                </div>
+            </div>
         </div>
     )
 }
@@ -138,7 +166,7 @@ function ObservationCard({ field, isGlobalEdit }: { field: FieldDefinition, isGl
     // Empty State
     if (!obs) {
         return (
-            <div className="bg-card border border-border/50 border-dashed rounded-lg p-6 opacity-60">
+            <div className="bg-card border border-border/50 border-dashed rounded-lg p-4 opacity-60">
                 <h4 className="font-bold text-foreground mb-1">{field.name}</h4>
                 <p className="text-sm text-muted-foreground">{field.description}</p>
                 <div className="mt-4 text-xs bg-muted inline-block px-2 py-1 rounded text-muted-foreground">
@@ -152,10 +180,10 @@ function ObservationCard({ field, isGlobalEdit }: { field: FieldDefinition, isGl
     if (!isEditing) {
         return (
             <div className="bg-card border border-border rounded-lg overflow-hidden transition-all hover:border-primary/20 shadow-sm relative group">
-                <div className="p-6">
-                    <div className="flex items-start justify-between mb-4">
+                <div className="p-4">
+                    <div className="flex items-start justify-between mb-2">
                         <div>
-                            <h4 className="font-bold text-lg text-foreground mb-1">{field.name}</h4>
+                            <h4 className="font-bold text-sm text-foreground mb-0.5">{field.name}</h4>
                             <p className="text-xs text-muted-foreground">{field.description}</p>
                         </div>
                         {obs.is_synthetic && (

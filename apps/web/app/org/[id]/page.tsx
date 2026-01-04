@@ -94,24 +94,32 @@ export default function OrgPage() {
                         </div>
                     </div>
 
-                    {/* Admin Toggle */}
-                    <button
-                        onClick={() => setIsEditMode(!isEditMode)}
-                        disabled={!org}
-                        className={`text-xs px-3 py-1.5 rounded-full border transition-colors font-mono uppercase tracking-wider flex items-center gap-2 ${isEditMode ? 'bg-amber-500/10 text-amber-500 border-amber-500/50' : 'text-muted-foreground border-border hover:bg-muted'}`}
-                    >
-                        {isEditMode ? (
-                            <>
-                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                                Exit Edit
-                            </>
-                        ) : (
-                            <>
-                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                                Edit
-                            </>
-                        )}
-                    </button>
+                    {/* Actions Area */}
+                    <div className="flex items-center gap-3">
+                        <button className="text-xs px-3 py-1.5 rounded-full border border-border text-muted-foreground hover:bg-muted font-mono uppercase tracking-wider flex items-center gap-2">
+                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                            Export PDF
+                        </button>
+
+                        {/* Admin Toggle */}
+                        <button
+                            onClick={() => setIsEditMode(!isEditMode)}
+                            disabled={!org}
+                            className={`text-xs px-3 py-1.5 rounded-full border transition-colors font-mono uppercase tracking-wider flex items-center gap-2 ${isEditMode ? 'bg-amber-500/10 text-amber-500 border-amber-500/50' : 'text-muted-foreground border-border hover:bg-muted'}`}
+                        >
+                            {isEditMode ? (
+                                <>
+                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                    Exit Edit
+                                </>
+                            ) : (
+                                <>
+                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                    Edit
+                                </>
+                            )}
+                        </button>
+                    </div>
                 </div>
             </header>
 
@@ -162,8 +170,8 @@ export default function OrgPage() {
                             </div>
                         </aside>
 
-                        {/* Center: Dossier Content */}
-                        <section className="lg:col-span-2 space-y-6">
+                        {/* Center: Dossier Content (Expanded) */}
+                        <section className="lg:col-span-3 space-y-6">
                             <div className="bg-card border border-border rounded-xl p-6 min-h-[500px] shadow-sm">
                                 <div className="flex items-center justify-between mb-6">
                                     <h2 className="text-xl font-bold text-foreground font-mono uppercase tracking-tight">
@@ -214,14 +222,7 @@ export default function OrgPage() {
                             </div>
                         </section>
 
-                        {/* Right: Actions (Placeholder) */}
-                        <aside className="space-y-6">
-                            <div className="bg-card border border-border rounded p-4">
-                                <h3 className="text-xs font-bold font-mono text-muted-foreground uppercase tracking-widest mb-3">Actions</h3>
-                                <button className="w-full text-left text-sm text-primary hover:underline mb-2">Export PDF Report</button>
-                                <button className="w-full text-left text-sm text-primary hover:underline">Share with Team</button>
-                            </div>
-                        </aside>
+
                     </>
                 )}
             </main>
