@@ -35,25 +35,10 @@ class StandardAnalyst(BaseAnalyst):
             self.log_audit("ERROR", {"message": "No fields definition found for this pillar"})
             return
 
-        # ... (rest of function)
-
-    def log_audit(self, step_type: str, input_context: dict, output_result: dict = None, 
-                  provider: str = None, model: str = None, 
-                  tokens_in: int = 0, tokens_out: int = 0, cost_usd: float = 0.0, latency_ms: int = 0):
-        # Print to console
-        print(f"[StandardAnalyst] [{step_type}] Provider: {provider} | Latency: {latency_ms}ms")
-        if step_type == "ERROR":
-            print(f"[StandardAnalyst] ERROR DETAIL: {input_context}")
-            
-        """
-        Writes to research_audit_logs table.
-        """
-        try:
-            # ... parent logic ...
-
         # 2. Query Generation (Step A: Hunter)
         queries = await self.generate_queries(fields)
         if not queries:
+            # Fallback strategy if generation fails
             queries = [f"{self.org['name']} {self.pillar.get('search_strategy_prompt', 'business model')}"]
         
         # 3. Discovery & Extraction (Step B: Clerk)
@@ -61,7 +46,6 @@ class StandardAnalyst(BaseAnalyst):
         
         # 4. Synthesis (Step C: Director)
         if not evidence_content:
-            # Fallback to pure knowledge if no net access or fail
             evidence_content = "No external evidence found. Rely on internal knowledge."
             
         observations = await self.synthesize(fields, evidence_content, evidence_metadata)
@@ -87,14 +71,13 @@ class StandardAnalyst(BaseAnalyst):
         )
         
         try:
-            # Use configured Query Model (e.g. gtm-4o-mini or gemini-flash)
             llm = ModelFactory.get_configured_model(settings.DEFAULT_QUERY_MODEL)
             response = llm.invoke(system_prompt)
             content = response.content.replace("```json", "").replace("```", "").strip()
             queries = json.loads(content)
             
             self.log_audit("QUERY_GEN", {"strategy": strategy}, {"queries": queries}, model=settings.DEFAULT_QUERY_MODEL)
-            return queries[:5] # Limit to 5
+            return queries[:5]
         except Exception as e:
             self.log_audit("ERROR", {"step": "QUERY_GEN", "error": str(e)})
             return []
@@ -112,14 +95,11 @@ class StandardAnalyst(BaseAnalyst):
         try:
             if settings.TAVILY_API_KEY:
                 tavily = TavilyClient(api_key=settings.TAVILY_API_KEY)
-                # We combine queries or just take the best one to save calls? 
-                # For MVP, let's just run the first 2 queries to be safe on rate limits
                 for q in queries[:2]:
                     resp = tavily.search(query=q, search_depth="basic", max_results=2)
                     for result in resp.get('results', []):
                         urls_to_scrape.append(result['url'])
                 
-                # Deduplicate
                 urls_to_scrape = list(set(urls_to_scrape))
                 self.log_audit("SEARCH", {"queries": queries[:2]}, {"urls": urls_to_scrape}, provider="tavily")
             else:
@@ -128,21 +108,19 @@ class StandardAnalyst(BaseAnalyst):
              self.log_audit("ERROR", {"step": "SEARCH", "error": str(e)})
 
         # B. EXTRACTION (Firecrawl)
-        # Verify Firecrawl key
         if not settings.FIRECRAWL_API_KEY:
              self.log_audit("WARNING", {"message": "FIRECRAWL_API_KEY missing, skipping scrape"})
              return "", []
 
         firecrawl = FirecrawlApp(api_key=settings.FIRECRAWL_API_KEY)
         
-        for url in urls_to_scrape[:3]: # Limit to top 3 URLs
+        for url in urls_to_scrape[:3]: 
             try:
-                # Firecrawl scrape
                 scrape_res = firecrawl.scrape_url(url, params={'formats': ['markdown']})
                 markdown = scrape_res.get('markdown', '')
                 
                 if markdown:
-                    combined_markdown += f"\n\n--- SOURCE: {url} ---\n{markdown[:8000]}" # Truncate per source
+                    combined_markdown += f"\n\n--- SOURCE: {url} ---\n{markdown[:8000]}" 
                     all_metadata.append({"url": url, "source": "web"})
             except Exception as e:
                 self.log_audit("ERROR", {"step": "SCRAPE", "url": url, "error": str(e)})
@@ -155,9 +133,6 @@ class StandardAnalyst(BaseAnalyst):
         Generates structured observations.
         """
         observations = []
-        
-        # Chunking: for MVP we do one big pass. 
-        # In Prod, we'd do field-by-field or grouped.
         
         field_instructions = []
         for f in fields:
@@ -177,7 +152,6 @@ class StandardAnalyst(BaseAnalyst):
         )
         
         try:
-            # Use configured Synthesis Model (e.g. gpt-4o or claude-3-opus)
             llm = ModelFactory.get_configured_model(settings.DEFAULT_SYNTHESIS_MODEL)
             response = llm.invoke([
                 {"role": "system", "content": system_prompt},
@@ -187,7 +161,6 @@ class StandardAnalyst(BaseAnalyst):
             content = response.content.replace("```json", "").replace("```", "").strip()
             data = json.loads(content)
             
-            # Map back to observation structure
             for f in fields:
                 key = f['key']
                 if key in data and data[key]:
@@ -198,7 +171,7 @@ class StandardAnalyst(BaseAnalyst):
                         "structured_value": {"value": item.get("value")},
                         "analysis_markdown": item.get("analysis"),
                         "confidence_score": item.get("confidence", 0.5),
-                        "evidence": evidence_metadata if evidence_metadata else [], # Link all sources for now
+                        "evidence": evidence_metadata if evidence_metadata else [],
                         "is_synthetic": False
                     })
             
@@ -215,11 +188,6 @@ class StandardAnalyst(BaseAnalyst):
 
         for obs in observations:
             try:
-                # Upsert observation
-                # We need match on (org_id, field_id)
-                # Supabase Python upsert needs explicit 'on_conflict' if not PK
-                
-                # Check if exists
                 existing = self.supabase.table("org_field_observations")\
                     .select("id")\
                     .eq("org_id", obs['org_id'])\

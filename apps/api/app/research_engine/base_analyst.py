@@ -33,6 +33,11 @@ class BaseAnalyst(ABC):
         """
         Writes to research_audit_logs table.
         """
+        # Print to console for debugging
+        print(f"[{self.agent_version}] [{step_type}] Prov: {provider} | Mod: {model} | Lat: {latency_ms}ms")
+        if step_type == "ERROR":
+             print(f"[{self.agent_version}] ERROR MAP: {input_context}")
+
         try:
             payload = {
                 "org_id": self.org['id'],
