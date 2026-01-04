@@ -159,7 +159,7 @@ export default function OrgPage() {
                             </div>
                         </div>
 
-                        {TEASERS[activeTab] ? (
+                        {isLocked && TEASERS[activeTab] ? (
                             // Locked Pillar -> Teaser
                             <TeaserCard
                                 title={activeTab.replace('_', ' ').toUpperCase()}
