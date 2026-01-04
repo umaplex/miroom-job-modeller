@@ -63,10 +63,15 @@ class StandardAnalyst(BaseAnalyst):
         strategy = self.pillar.get('search_strategy_prompt', 'Find general info')
         target = f"{self.org['name']} ({self.org.get('domain', '')})"
         
+        # KEY IMPROVEMENT: Tell the Hunter exactly what fields we need
+        target_fields = [f['name'] for f in fields]
+        field_context = ", ".join(target_fields[:5]) # Limit to top 5 to avoid prompt noise
+        
         system_prompt = (
             "You are a Research Analyst. Generate 3 specific search queries to find information "
             f"about the '{self.pillar['name']}' for the organization '{target}'.\n"
             f"Strategy: {strategy}\n"
+            f"Focus specifically on finding data for these metrics: {field_context}\n"
             "Return ONLY a JSON array of strings, e.g. [\"query1\", \"query2\"]"
         )
         
