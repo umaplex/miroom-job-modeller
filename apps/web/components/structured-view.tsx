@@ -41,6 +41,9 @@ export function StructuredView({ dimensions, isEditing }: { dimensions: Dimensio
     const [activeDimId, setActiveDimId] = useState<string>(dimensions[0]?.id)
 
     // Auto-select first dimension if data changes (e.g. switching pillars)
+    // We use a derived ID string to ensure dependency stability and avoid "size changed" errors
+    const dimIds = dimensions?.map(d => d.id).join(',')
+
     useEffect(() => {
         if (dimensions?.length > 0) {
             const isActiveValid = dimensions.find(d => d.id === activeDimId)
@@ -48,7 +51,8 @@ export function StructuredView({ dimensions, isEditing }: { dimensions: Dimensio
                 setActiveDimId(dimensions[0].id)
             }
         }
-    }, [dimensions, activeDimId])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [dimIds, activeDimId])
 
     if (!dimensions || dimensions.length === 0) {
         return <div className="text-muted-foreground italic p-4">No structured data available for this pillar.</div>
