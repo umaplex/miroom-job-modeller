@@ -88,6 +88,27 @@ class BaseAnalyst(ABC):
                     "display_text": user_msg,
                     "audience": audience
                 }).execute()
+
+            # --- DEBUG LOGGING (ADMIN ONLY) ---
+            # Also log specific details for Admins to debug "Why did it miss NRR?"
+            debug_msg = None
+            if step_type == "QUERY_GEN":
+                 queries = input_context.get('queries', []) or output_result.get('queries', [])
+                 if queries:
+                     debug_msg = f"DEBUG: Queries generated: {str(queries)}"
+            elif step_type == "SEARCH":
+                 urls = output_result.get('urls', [])
+                 if urls:
+                     debug_msg = f"DEBUG: Sources found: {str(urls)}"
+
+            if debug_msg:
+                 self.supabase.table("prep_logs").insert({
+                    "org_id": self.org['id'],
+                    "pillar_id": self.pillar['id'],
+                    "internal_code": "DEBUG",
+                    "display_text": debug_msg,
+                    "audience": "ADMIN"
+                }).execute()
                 
         except Exception as e:
             logger.error(f"Failed to write audit log: {e}")
