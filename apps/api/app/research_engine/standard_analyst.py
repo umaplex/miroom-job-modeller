@@ -100,7 +100,11 @@ class StandardAnalyst(BaseAnalyst):
                     for result in resp.get('results', []):
                         urls_to_scrape.append(result['url'])
                 
-                urls_to_scrape = list(set(urls_to_scrape))
+                # Deduplicate and Filter
+                blacklist = ['linkedin.com', 'facebook.com', 'instagram.com', 'twitter.com', 'x.com']
+                unique_urls = set(urls_to_scrape)
+                urls_to_scrape = [u for u in unique_urls if not any(b in u for b in blacklist)]
+
                 self.log_audit("SEARCH", {"queries": queries[:2]}, {"urls": urls_to_scrape}, provider="tavily")
             else:
                 self.log_audit("WARNING", {"message": "TAVILY_API_KEY missing, skipping search"})
