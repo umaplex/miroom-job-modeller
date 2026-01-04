@@ -41,7 +41,11 @@ export default function OrgPage() {
         }
     }, [params.id])
 
-    if (!org) return <div className="p-8 text-muted-foreground font-mono">Loading signal...</div>
+    // Safe accessors for header
+    const displayName = org?.display_name || "Loading Entity..."
+    const domain = org?.domain || "..."
+    const companySize = org?.company_size?.replace(/_/g, ' ')
+    const industry = org?.industry?.replace(/_/g, ' ')
 
     const activePillar = pillars.find(p => p.pillar_id === activeTab)
     // TEMP: Force unlock for testing per user request
@@ -80,11 +84,11 @@ export default function OrgPage() {
                                 </span>
                             </div>
                             <div className="overflow-hidden">
-                                <h1 className="font-bold text-foreground truncate">{org.display_name}</h1>
-                                <div className="text-xs text-muted-foreground truncate mb-1">{org.domain}</div>
+                                <h1 className="font-bold text-foreground truncate">{displayName}</h1>
+                                <div className="text-xs text-muted-foreground truncate mb-1">{domain}</div>
                                 <div className="flex gap-1">
-                                    {org.company_size && <span className="text-[9px] px-1.5 py-0.5 rounded border border-border text-muted-foreground bg-muted">{org.company_size.replace(/_/g, ' ')}</span>}
-                                    {org.industry && <span className="text-[9px] px-1.5 py-0.5 rounded border border-border text-muted-foreground bg-muted truncate max-w-[80px]">{org.industry.replace(/_/g, ' ')}</span>}
+                                    {companySize && <span className="text-[9px] px-1.5 py-0.5 rounded border border-border text-muted-foreground bg-muted">{companySize}</span>}
+                                    {industry && <span className="text-[9px] px-1.5 py-0.5 rounded border border-border text-muted-foreground bg-muted truncate max-w-[80px]">{industry}</span>}
                                 </div>
                             </div>
                         </div>
@@ -93,6 +97,7 @@ export default function OrgPage() {
                     {/* Admin Toggle */}
                     <button
                         onClick={() => setIsEditMode(!isEditMode)}
+                        disabled={!org}
                         className={`text-xs px-3 py-1.5 rounded-full border transition-colors font-mono uppercase tracking-wider flex items-center gap-2 ${isEditMode ? 'bg-amber-500/10 text-amber-500 border-amber-500/50' : 'text-muted-foreground border-border hover:bg-muted'}`}
                     >
                         {isEditMode ? (
@@ -110,107 +115,115 @@ export default function OrgPage() {
                 </div>
             </header>
 
-            {/* Live Research Banner */}
+            {/* Live Research Banner - Always Visible */}
             <ResearchProgress />
 
             <main className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-8 p-6">
-
-                {/* Left: Navigation */}
-                <aside className="space-y-8">
-                    {/* Foundation */}
-                    <div>
-                        <h3 className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-widest mb-2">Foundation</h3>
-                        <div className="space-y-1">
-                            {['general', 'econ_engine', 'org_dna'].map(id => (
-                                <button
-                                    key={id}
-                                    onClick={() => setActiveTab(id)}
-                                    className={`w-full text-left px-3 py-2 text-sm rounded transition-colors ${activeTab === id ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground hover:bg-muted'}`}
-                                >
-                                    {id === 'general' ? 'Vital Signs' : id.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                                </button>
-                            ))}
-                        </div>
+                {!org ? (
+                    // Loading Skeleton
+                    <div className="col-span-full py-12 text-center text-muted-foreground font-mono animate-pulse">
+                        Configuring Satellite Uplink...
                     </div>
-
-                    {/* Intelligence (Pillars) */}
-                    <div>
-                        <h3 className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-widest mb-2">Intelligence</h3>
-                        <div className="space-y-1">
-                            {['burning_platform', 'domain_lexicon', 'decision_making'].map(id => (
-                                <button
-                                    key={id}
-                                    onClick={() => setActiveTab(id)}
-                                    className={`w-full text-left px-3 py-2 text-sm rounded transition-colors flex items-center justify-between group ${activeTab === id ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground hover:bg-muted'}`}
-                                >
-                                    <span>{id.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-                                    <svg className="w-3 h-3 opacity-0 group-hover:opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 15l-3-3m0 0l3-3m-3 3h8" /></svg>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                </aside>
-
-                {/* Center: Dossier Content */}
-                <section className="lg:col-span-2 space-y-6">
-                    <div className="bg-card border border-border rounded-xl p-6 min-h-[500px] shadow-sm">
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-xl font-bold text-foreground font-mono uppercase tracking-tight">
-                                {activeTab === 'general' ? 'Vital Signs' : activeTab.replace('_', ' ')}
-                            </h2>
-                            <div className="text-[10px] bg-muted text-muted-foreground px-2 py-1 rounded font-mono">
-                                V1.2 • AUTO-GENERATED
+                ) : (
+                    <>
+                        {/* Left: Navigation */}
+                        <aside className="space-y-8">
+                            {/* Foundation */}
+                            <div>
+                                <h3 className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-widest mb-2">Foundation</h3>
+                                <div className="space-y-1">
+                                    {['general', 'econ_engine', 'org_dna'].map(id => (
+                                        <button
+                                            key={id}
+                                            onClick={() => setActiveTab(id)}
+                                            className={`w-full text-left px-3 py-2 text-sm rounded transition-colors ${activeTab === id ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground hover:bg-muted'}`}
+                                        >
+                                            {id === 'general' ? 'Vital Signs' : id.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
-                        </div>
 
-                        {isLocked && TEASERS[activeTab] ? (
-                            // Locked Pillar -> Teaser
-                            <TeaserCard
-                                title={activeTab.replace('_', ' ').toUpperCase()}
-                                question={TEASERS[activeTab].question}
-                                risk={TEASERS[activeTab].risk}
-                                onUnlock={() => setIsUpgradeOpen(true)}
-                            />
-                        ) : (
-                            // Unlocked -> Content
-                            <div className="space-y-6 animate-in fade-in duration-500">
-                                <div className="flex items-center gap-2 mb-4">
-                                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                    <span className="text-sm font-mono text-emerald-500">Analysis Complete</span>
+                            {/* Intelligence (Pillars) */}
+                            <div>
+                                <h3 className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-widest mb-2">Intelligence</h3>
+                                <div className="space-y-1">
+                                    {['burning_platform', 'domain_lexicon', 'decision_making'].map(id => (
+                                        <button
+                                            key={id}
+                                            onClick={() => setActiveTab(id)}
+                                            className={`w-full text-left px-3 py-2 text-sm rounded transition-colors flex items-center justify-between group ${activeTab === id ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground hover:bg-muted'}`}
+                                        >
+                                            <span>{id.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
+                                            <svg className="w-3 h-3 opacity-0 group-hover:opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 15l-3-3m0 0l3-3m-3 3h8" /></svg>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </aside>
+
+                        {/* Center: Dossier Content */}
+                        <section className="lg:col-span-2 space-y-6">
+                            <div className="bg-card border border-border rounded-xl p-6 min-h-[500px] shadow-sm">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h2 className="text-xl font-bold text-foreground font-mono uppercase tracking-tight">
+                                        {activeTab === 'general' ? 'Vital Signs' : activeTab.replace('_', ' ')}
+                                    </h2>
+                                    <div className="text-[10px] bg-muted text-muted-foreground px-2 py-1 rounded font-mono">
+                                        V1.2 • AUTO-GENERATED
+                                    </div>
                                 </div>
 
-                                <p className="text-muted-foreground leading-relaxed">
-                                    Based on the analysis of <strong>{org.display_name}</strong>, here is the {activeTab.replace('_', ' ')} breakdown...
-                                </p>
-
-                                {/* Render Structured Dossier if available, else Mock Data or Placeholder */}
-                                {dossier && dossier[activeTab] ? (
-                                    <div className="mt-8">
-                                        <StructuredView dimensions={dossier[activeTab]} isEditing={isEditMode} />
-                                    </div>
-                                ) : activeTab === 'general' ? (
-                                    /* Fallback for General if no dossier yet */
-                                    <div className="mt-6">
-                                        <VitalSigns content={pillars.find((p: any) => p.pillar_id === 'general')?.content} />
-                                    </div>
+                                {isLocked && TEASERS[activeTab] ? (
+                                    // Locked Pillar -> Teaser
+                                    <TeaserCard
+                                        title={activeTab.replace('_', ' ').toUpperCase()}
+                                        question={TEASERS[activeTab].question}
+                                        risk={TEASERS[activeTab].risk}
+                                        onUnlock={() => setIsUpgradeOpen(true)}
+                                    />
                                 ) : (
-                                    <div className="mt-12 text-center p-8 border border-dashed border-border rounded bg-muted/30">
-                                        <p className="text-muted-foreground italic">initializing structured model...</p>
+                                    // Unlocked -> Content
+                                    <div className="space-y-6 animate-in fade-in duration-500">
+                                        <div className="flex items-center gap-2 mb-4">
+                                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                            <span className="text-sm font-mono text-emerald-500">Analysis Complete</span>
+                                        </div>
+
+                                        <p className="text-muted-foreground leading-relaxed">
+                                            Based on the analysis of <strong>{org.display_name}</strong>, here is the {activeTab.replace('_', ' ')} breakdown...
+                                        </p>
+
+                                        {/* Render Structured Dossier if available, else Mock Data or Placeholder */}
+                                        {dossier && dossier[activeTab] ? (
+                                            <div className="mt-8">
+                                                <StructuredView dimensions={dossier[activeTab]} isEditing={isEditMode} />
+                                            </div>
+                                        ) : activeTab === 'general' ? (
+                                            /* Fallback for General if no dossier yet */
+                                            <div className="mt-6">
+                                                <VitalSigns content={pillars.find((p: any) => p.pillar_id === 'general')?.content} />
+                                            </div>
+                                        ) : (
+                                            <div className="mt-12 text-center p-8 border border-dashed border-border rounded bg-muted/30">
+                                                <p className="text-muted-foreground italic">initializing structured model...</p>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
-                        )}
-                    </div>
-                </section>
+                        </section>
 
-                {/* Right: Actions (Placeholder) */}
-                <aside className="space-y-6">
-                    <div className="bg-card border border-border rounded p-4">
-                        <h3 className="text-xs font-bold font-mono text-muted-foreground uppercase tracking-widest mb-3">Actions</h3>
-                        <button className="w-full text-left text-sm text-primary hover:underline mb-2">Export PDF Report</button>
-                        <button className="w-full text-left text-sm text-primary hover:underline">Share with Team</button>
-                    </div>
-                </aside>
+                        {/* Right: Actions (Placeholder) */}
+                        <aside className="space-y-6">
+                            <div className="bg-card border border-border rounded p-4">
+                                <h3 className="text-xs font-bold font-mono text-muted-foreground uppercase tracking-widest mb-3">Actions</h3>
+                                <button className="w-full text-left text-sm text-primary hover:underline mb-2">Export PDF Report</button>
+                                <button className="w-full text-left text-sm text-primary hover:underline">Share with Team</button>
+                            </div>
+                        </aside>
+                    </>
+                )}
             </main>
 
             <UpgradeModal isOpen={isUpgradeOpen} onClose={() => setIsUpgradeOpen(false)} />
