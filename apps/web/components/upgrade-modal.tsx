@@ -5,10 +5,9 @@ import { useEffect, useState } from 'react'
 interface UpgradeModalProps {
     isOpen: boolean
     onClose: () => void
-    orgName: string
 }
 
-export function UpgradeModal({ isOpen, onClose, orgName }: UpgradeModalProps) {
+export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
     const [isVisible, setIsVisible] = useState(false)
 
     useEffect(() => {
