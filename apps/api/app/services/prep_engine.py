@@ -43,6 +43,7 @@ class PrepEngine:
     async def execute_pillar_worker(self, org_id: str, pillar_id: str):
         """
         The actual 'Thinking' worker.
+        Now delegated to the Research OS Analyst.
         """
         def log(msg, code="INFO"):
             try:
@@ -56,51 +57,33 @@ class PrepEngine:
                 print(f"Log Error: {e}")
 
         try:
-            # Update Status -> SEARCHING
+            # 1. Fetch Context
+            log(f"Initializing Research OS for {pillar_id}...", "WORKER_START")
+            
+            # Fetch Org Data
+            org_res = self.supabase.table("organizations").select("*").eq("id", org_id).single().execute()
+            org = org_res.data
+            
+            # Fetch Pillar Config
+            # Note: We need the full config including strategies
+            pillar_res = self.supabase.table("pillar_definitions").select("*").eq("id", pillar_id).single().execute()
+            pillar_def = pillar_res.data
+
+            # 2. Update Status -> SEARCHING
             self.supabase.table("org_pillar_status").update({"status": "SEARCHING"}).eq("org_id", org_id).eq("pillar_id", pillar_id).execute()
-            log(f"Starting research for {pillar_id}...", "WORKER_START")
 
-            # Simulate Tavily Search (Placeholder for Part 2)
-            await asyncio.sleep(2) # Fake latency
-            log("Querying financial databases...", "SEARCH_EXEC")
+            # 3. Dispatch to Analyst (Strategy Pattern)
+            # Future: Check 'agent_version' in request or config to swap classes
+            from app.research_engine.standard_analyst import StandardAnalyst
             
-            # Update Status -> SYNTHESIZING
-            self.supabase.table("org_pillar_status").update({"status": "SYNTHESIZING"}).eq("org_id", org_id).eq("pillar_id", pillar_id).execute()
+            analyst = StandardAnalyst(self.supabase, org, pillar_def)
+            await analyst.run()
             
-            # Simulate LLM
-            llm = ModelFactory.get_model(ModelProvider.OPENAI)
-            # prompt = ... (Load from pillar config)
-            # resp = llm.invoke(...)
-            await asyncio.sleep(2) # Fake latency
-            log("Synthesizing insights...", "LLM_REASONING")
-
-            # Finalize
-            # Finalize
-            if pillar_id == 'general':
-                mock_content = {
-                    "summary": "General Vital Signs Analysis",
-                    "metrics": {
-                        "headcount_velocity": "+15% YoY",
-                        "talent_density": "High (ex-Google, Stripe)",
-                        "leadership_stability": "Stable (CEO 4y)"
-                    }
-                }
-            else:
-                mock_content = {
-                    "summary": f"This is a generated insight for {pillar_id}.",
-                    "metrics": {"av_revenue": "$100M"}
-                }
-            
-            self.supabase.table("org_pillar_data").upsert({
-                "org_id": org_id, 
-                "pillar_id": pillar_id,
-                "content": mock_content,
-                "version": 1
-            }, on_conflict="org_id, pillar_id, version").execute()
-
+            # 4. Finalize
             self.supabase.table("org_pillar_status").update({"status": "COMPLETED"}).eq("org_id", org_id).eq("pillar_id", pillar_id).execute()
             log("Pillar analysis complete.", "WORKER_DONE")
 
         except Exception as e:
             log(f"Worker Failed: {str(e)}", "ERROR")
             self.supabase.table("org_pillar_status").update({"status": "FAILED"}).eq("org_id", org_id).eq("pillar_id", pillar_id).execute()
+
